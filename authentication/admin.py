@@ -32,7 +32,7 @@ class UserAdmin(admin.ModelAdmin):
     ordering = ('email',)
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
-        ('Personal info', {'fields': ('full_name', 'mobile_number', 'section')}),
+        ('Personal info', {'fields': ('full_name', 'mobile_number',)}),
         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser')}),
         ('Important dates', {'fields': ('last_login', 'date_joined')}),
     )
@@ -44,9 +44,7 @@ class UserAdmin(admin.ModelAdmin):
             print("Password: ", password)
             if not is_sha256_hash(password):
                 print("setting password")
-                # If the password is not a hash, hash it
                 obj.set_password(password)
-            # If the password is already a hash, don't rehash it
             else:
                 obj.password = password
         elif 'password' in form.changed_data:

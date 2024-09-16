@@ -72,18 +72,20 @@ THIRD_PARTY_APPS = [
     'drf_yasg',
     'rest_framework_simplejwt',
     'django_filters',
+    'import_export',
 ]
 
 # Custom apps
 CUSTOM_APPS = [
     'base',
     'authentication',
+    'ca',
+    'makeaton',
 ]
 
 INSTALLED_APPS += CUSTOM_APPS + THIRD_PARTY_APPS
 ASGI_APPLICATION = "config.asgi.application"
 # Application name
-
 
 
 # Login URL
