@@ -40,32 +40,8 @@ schema_view = get_schema_view(
 urlpatterns = [
     path(
         "",
-        include("base.urls")),
-
-    path(
-        "authentication/",
-        include("authentication.urls"),
-        name="authentication"
-    ),
-
-    path(f'{settings.ADMIN_URL}doc/', include('django.contrib.admindocs.urls')),
-    # path(
-    # 	settings.ADMIN_URL,
-    # 	include("log_viewer.urls")),
-    path(
-        settings.ADMIN_URL,
         admin.site.urls),
-    re_path(
-        r'swagger(?P<format>\.json|\.yaml)$',
-        schema_view.without_ui(
-            cache_timeout=0),
-        name='schema-json'),
-    path(
-        r'swagger/',
-        schema_view.with_ui(
-            'swagger',
-            cache_timeout=0),
-        name='schema-swagger-ui'),
+
 ]
 
 urlpatterns += static(settings.STATIC_URL,
