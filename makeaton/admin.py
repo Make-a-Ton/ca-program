@@ -175,8 +175,8 @@ class TeamMemberAdmin(ImportExportModelAdmin):
     actions = ['check_stars']
 
     def check_stars(self, request, queryset):
-        # threading.Thread(target=bulk_started_status_check, args=(queryset,)).start()
-        bulk_started_status_check(queryset)
+        threading.Thread(target=bulk_started_status_check, args=(queryset,)).start()
+        # bulk_started_status_check(queryset)
 
 
 class TeamMemberInline(admin.TabularInline):
