@@ -206,8 +206,6 @@ class ParticipantsAdmin(admin.ModelAdmin):
     list_display = ('name', 'college_name', 'number_of_referrals')
     search_fields = ('name',)
     fields = ['name', 'college']
-    # disble ordering for college
-    ordering = ['id']
 
     def name(self, obj):
         return obj.user.full_name
@@ -220,7 +218,5 @@ class ParticipantsAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         # order by number of referral and only show greater than 0
-        if not request.user.is_superuser:
-            return super().get_queryset(request).annotate(referral_count=Count('referrals')).filter(
-                referral_count__gt=0).order_by('-referral_count')
-        return super().get_queryset(request).annotate(referral_count=Count('referrals')).order_by('-referral_count')
+        return super().get_queryset(request).annotate(referral_count=Count('referrals')).filter(
+            referral_count__gt=0).order_by('-referral_count')
