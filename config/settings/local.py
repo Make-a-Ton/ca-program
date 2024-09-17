@@ -38,11 +38,13 @@ ALLOWED_HOSTS += ["*"]
 # Additional trusted CSRF origins
 CSRF_TRUSTED_ORIGINS += [
     "http://localhost:8000",
+    "https://ca.radr.in",
 ]
 
 # Additional CORS origins whitelist
 CORS_ORIGIN_WHITELIST += [
     "http://localhost:8000",
+    "https://ca.radr.in",
 ]
 
 CACHE_TIMEOUT = 60  # seconds
