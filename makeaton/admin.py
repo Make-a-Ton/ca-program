@@ -173,7 +173,9 @@ class ParticipantsAdmin(admin.ModelAdmin):
         'name', 'email', 'phone_number', 'college_name')
 
     def get_queryset(self, request):
-        return super().get_queryset(request).filter(referral=request.user.campusambassador)
+        if not request.user.is_superuser:
+            return super().get_queryset(request).filter(referral=request.user.campusambassador)
+        return super().get_queryset(request)
 
 
 @admin.register(Leaderboard)
@@ -195,5 +197,7 @@ class ParticipantsAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         # order by number of referral and only show greater than 0
-        return super().get_queryset(request).annotate(referral_count=Count('referrals')).filter(
-            referral_count__gt=0).order_by('-referral_count')
+        if not request.user.is_superuser:
+            return super().get_queryset(request).annotate(referral_count=Count('referrals')).filter(
+                referral_count__gt=0).order_by('-referral_count')
+        return super().get_queryset(request).annotate(referral_count=Count('referrals')).order_by('-referral_count')

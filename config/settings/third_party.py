@@ -132,6 +132,11 @@ JAZZMIN_SETTINGS = {
         "authentication": "fas fa-users-cog",
         "authentication.User": "fas fa-user",
         "auth.Group": "fas fa-users",
+        'makeaton.Leaderboard': 'fas fa-trophy',
+        'makeaton.Team': 'fas fa-users',
+        'makeaton.Participants': 'fas fa-user',
+        'makeaton.TeamMember': 'fas fa-users',
+        'ca.CampusAmbassador': 'fas fa-star',
 
     },
     # Icons that are used when one is not manually specified
@@ -182,6 +187,7 @@ LOG_VIEWER_FILES = ['auth.log', 'request.log', 'default.log', 'home.log']
 # LOG_VIEWER_FILE_LIST_TITLE = "Log files"
 # LOG_VIEWER_FILE_LIST_STYLES = "/static/css/logs.css"
 LOGGING_ROOT = os.path.join(BASE_DIR, 'logs')
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -257,6 +263,7 @@ LOGGING = {
         },
     }
 }
+
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=5),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=10),
