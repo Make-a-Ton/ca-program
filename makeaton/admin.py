@@ -119,7 +119,6 @@ class TeamMemberResource(resources.ModelResource):
                     user.mobile_number = phone_number
                     user.is_staff = True
                     user.is_active = True
-                    user.set_password(f'makeaton@2024')
                     grp = Group.objects.get_or_create(name='Team Leader')
                     user.groups.add(grp[0])
                     user.save()
@@ -170,7 +169,7 @@ class TeamMemberAdmin(ImportExportModelAdmin):
     resource_class = TeamMemberResource
     list_display = ('name', 'email', 'phone_number', 'team', 'team_leader', 'started_conductor')
     search_fields = ('name', 'email', 'phone_number', 'team__name')
-    list_filter = ('team', 'team_leader','started_conductor')
+    list_filter = ('team', 'team_leader', 'started_conductor')
 
     actions = ['check_stars']
 
