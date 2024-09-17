@@ -8,7 +8,6 @@ from .base import *
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -22,19 +21,19 @@ DATABASES = {
 
 # Allowed hosts
 ALLOWED_HOSTS = [
-#    'your-staging-url.com',
-
-
+    'campus.makeaton.in',
+    'ca.radr.in',
 ]
 
-# CSRF settings
-CSRF_TRUSTED_ORIGINS = [
-#     'http://your-prod-url.com',
+CSRF_TRUSTED_ORIGINS += [
+    "https://ca.radr.in",
+    "https://campus.makeaton.in",
 ]
 
-# CORS settings
-CORS_ORIGIN_WHITELIST = [
-#    'http://your-prod-url.com',
+# Additional CORS origins whitelist
+CORS_ORIGIN_WHITELIST += [
+    "https://ca.radr.in",
+    "https://campus.makeaton.in",
 ]
 
 CORS_ORIGIN_ALLOW_ALL = False
