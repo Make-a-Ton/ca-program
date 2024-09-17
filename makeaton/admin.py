@@ -1,5 +1,5 @@
 from django.contrib.auth.models import Group
-from django.db.models import Count
+from django.db.models import Count, Q
 from import_export import resources, fields
 from import_export.admin import ImportExportModelAdmin
 from django.contrib import admin
@@ -9,6 +9,10 @@ from ca.models import CampusAmbassador
 from .models import Team, TeamMember, Participants, Leaderboard
 from authentication.models import User
 import logging
+
+import threading
+
+from .utils import bulk_started_status_check
 
 logger = logging.getLogger('home')
 
@@ -164,9 +168,15 @@ class TeamResource(resources.ModelResource):
 @admin.register(TeamMember)
 class TeamMemberAdmin(ImportExportModelAdmin):
     resource_class = TeamMemberResource
-    list_display = ('name', 'email', 'phone_number', 'team', 'team_leader')
+    list_display = ('name', 'email', 'phone_number', 'team', 'team_leader', 'started_conductor')
     search_fields = ('name', 'email', 'phone_number', 'team__name')
     list_filter = ('team', 'team_leader')
+
+    actions = ['check_stars']
+
+    def check_stars(self, request, queryset):
+        # threading.Thread(target=bulk_started_status_check, args=(queryset,)).start()
+        bulk_started_status_check(queryset)
 
 
 class TeamMemberInline(admin.TabularInline):
@@ -189,8 +199,9 @@ class TeamAdmin(ImportExportModelAdmin):
 
 @admin.register(Participants)
 class ParticipantsAdmin(admin.ModelAdmin):
-    list_display = ('name', 'phone_number', 'college_name', 'team',)
+    list_display = ('name', 'phone_number', 'college_name', 'team', 'started_conductor')
     search_fields = ('name', 'phone_number',)
+    list_filter = ['started_conductor']
 
     fields = (
         'name', 'email', 'phone_number', 'college_name')
@@ -214,9 +225,10 @@ class ParticipantsAdmin(admin.ModelAdmin):
         return obj.college
 
     def number_of_referrals(self, obj):
-        return obj.referrals.count()
+        return obj.referrals.filter(started_conductor=True).count()
 
     def get_queryset(self, request):
-        # order by number of referral and only show greater than 0
-        return super().get_queryset(request).annotate(referral_count=Count('referrals')).filter(
-            referral_count__gt=0).order_by('-referral_count')
+        # Filter Campus Ambassadors who have referrals, and among the referred members, only include those who have started_conductor=True
+        return super().get_queryset(request).annotate(
+            referral_count=Count('referrals', filter=Q(referrals__started_conductor=True))
+        ).filter(referral_count__gt=0).order_by('-referral_count')

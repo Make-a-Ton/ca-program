@@ -61,6 +61,7 @@ class TeamMember(Model):
     about = models.TextField(blank=True, null=True)  # About the participant
     diet = models.CharField(max_length=255, blank=True, null=True,
                             choices=(('Veg', 'Veg'), ('Non-Veg', 'Non-Veg')))  # Dietary preference
+    started_conductor = models.BooleanField(default=False)  # Whether the participant has started the Conductor Track
 
     def __str__(self):
         return self.name
