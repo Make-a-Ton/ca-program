@@ -6,6 +6,7 @@ from import_export.fields import Field
 
 from authentication.models import User
 from base.utils import clean_mobile_number
+from makeaton.models import TeamMember
 from .models import CampusAmbassador
 
 
@@ -77,13 +78,16 @@ class CampusAmbassadorAdmin(ImportExportModelAdmin):
         'college',
         'course',
         'year',
-        'coupon_code'
+        'coupon_code',
+        'referral',
+        'mobile_number'
     )
 
     # Add search functionality for user and college fields
     search_fields = (
         'user__email',
         'user__full_name',
+        'user__mobile_number',
         'college',
         'coupon_code'
     )
@@ -94,3 +98,9 @@ class CampusAmbassadorAdmin(ImportExportModelAdmin):
         'course',
         'year'
     )
+
+    def referral(self, obj):
+        return obj.referrals.count()
+
+    def mobile_number(self, obj):
+        return obj.user.mobile_number
