@@ -1,3 +1,4 @@
+from django.contrib.auth.models import Group
 from django.db.models import Count
 from import_export import resources, fields
 from import_export.admin import ImportExportModelAdmin
@@ -7,6 +8,9 @@ from base.utils import clean_mobile_number
 from ca.models import CampusAmbassador
 from .models import Team, TeamMember, Participants, Leaderboard
 from authentication.models import User
+import logging
+
+logger = logging.getLogger('home')
 
 
 class TeamMemberResource(resources.ModelResource):
@@ -66,7 +70,7 @@ class TeamMemberResource(resources.ModelResource):
         row['phone_number'] = phone_number
         # Check if the team exists by name and leader's phone number
         if not team_name or not leader_phone:
-            print(f"Invalid row: Team Name or Leader's Phone Number is empty {row}" + "\n-----" * 5)
+            logger.error(f"Invalid row: Team Name or Leader's Phone Number is empty {row}" + "\n-----" * 5)
             return
         team, created = Team.objects.get_or_create(
             name=team_name,
@@ -100,6 +104,25 @@ class TeamMemberResource(resources.ModelResource):
             team.leader_phone = leader_phone
             team.save()
 
+            name = row.get('name', '')
+            email = row.get('email', '')
+            if email:
+                user, created = User.objects.get_or_create(
+                    email=email,
+                )
+                if created:
+                    user.full_name = name
+                    user.mobile_number = phone_number
+                    user.is_staff = True
+                    user.is_active = True
+                    user.set_password(f'makeaton@2024')
+                    grp = Group.objects.get_or_create(name='Team Leader')
+                    user.groups.add(grp[0])
+                    user.save()
+
+    def after_import(self, dataset, result, **kwargs):
+        from makeaton.utils import cross_match_referrals
+        cross_match_referrals()
         # Assign the team to the team member instance
 
         # instance.phone_number = clean_mobile_number(row.get('Phone Number', ''))  # Clean the phone number

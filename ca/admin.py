@@ -64,7 +64,13 @@ class CampusAmbassadorResource(resources.ModelResource):
     def skip_row(self, instance, original, row, import_validation_errors=None):
         # Skip rows where the coupon code is empty
         already_exists = CampusAmbassador.objects.filter(coupon_code=row.get('Coupon ID')).exists()
+        if already_exists:
+            print('kooi')
         return super().skip_row(instance, original, row, import_validation_errors) or already_exists
+
+    def after_import(self, dataset, result, **kwargs):
+        from makeaton.utils import cross_match_referrals
+        cross_match_referrals()
 
 
 # Define the admin class for filters, search, and import/export

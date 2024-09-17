@@ -12,6 +12,8 @@ class Team(Model):
     conductor_track = models.BooleanField(default=False)  # Whether the team is competing in the Conductor Track
     project_details = models.TextField(blank=True, null=True)  # Details about projects built or planned
     leader_phone = models.CharField(max_length=15)  # Cleaned phone number of the team leader
+    leader = models.ForeignKey('authentication.User', on_delete=models.RESTRICT,
+                               related_name='team_leader',blank=True, null=True)  # Team leader
 
     def __str__(self):
         return self.name

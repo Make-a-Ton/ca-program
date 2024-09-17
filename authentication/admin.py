@@ -27,13 +27,13 @@ def is_sha256_hash(text):
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
     list_display = ('email', 'full_name', 'mobile_number', 'is_active', 'is_staff', 'is_superuser')
-    list_filter = ('is_active', 'is_staff', 'is_superuser')
+    list_filter = ('is_active', 'is_staff', 'is_superuser','groups')
     search_fields = ('email', 'full_name', 'mobile_number')
     ordering = ('email',)
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
         ('Personal info', {'fields': ('full_name', 'mobile_number',)}),
-        ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser')}),
+        ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser','groups')}),
         ('Important dates', {'fields': ('last_login', 'date_joined')}),
     )
 

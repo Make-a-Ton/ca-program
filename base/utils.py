@@ -6,26 +6,31 @@ def clean_mobile_number(number):
     Cleans a mobile number by:
     - Removing extra spaces
     - Trimming leading and trailing spaces
-    - Removing the country code (e.g., +91)
-    - Returning only the final 10-digit number
+    - Removing any leading country code
+    - Ensuring the number starts with +91 and is followed by 10 digits
 
     Args:
     - number (str): The mobile number to clean.
 
     Returns:
-    - str: The cleaned 10-digit mobile number.
+    - str: The cleaned 13-digit mobile number in the format +91XXXXXXXXXX.
     """
-    # Remove extra spaces and trim
+    # Remove extra spaces and trim the number
     number = number.strip()
 
-    # Remove country code (+91) and other non-digit characters
-    # number = re.sub(r'^\+91', '', number)
-    number = re.sub(r'\D', '', number)
-    if not number.startswith('+91') or len(number) == 10:
-        number = '+91' + number
-    if number.startswith('91') and len(number) == 12:
-        number = '+' + number[2:]
+    # Remove any characters that are not digits or the '+' at the start
+    number = ''.join([char for char in number if char.isdigit() or char == '+'])
 
+    # If the number starts with +91, remove the +91
+    if number.startswith('+91'):
+        number = number[3:]
 
-    # Ensure we only return the last 10 digits
-    return number
+    # If the number starts with a different country code (e.g., +1 or +44), remove the code
+    if number.startswith('+'):
+        number = number[1:]  # Removes any leading +
+
+    # Ensure the number is 10 digits by taking only the last 10 digits
+    number = number[-10:]
+
+    # Return the number formatted with the +91 prefix
+    return f'+91{number}'
