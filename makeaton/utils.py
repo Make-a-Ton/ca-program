@@ -1,4 +1,7 @@
 import logging
+import re
+import time
+from urllib.parse import urlparse
 
 from ca.models import CampusAmbassador
 from makeaton.models import TeamMember
@@ -46,6 +49,43 @@ def has_user_starred_repo(username, repo_owner="conductor-oss", repo_name="condu
         raise Exception(f"Failed to fetch starred repos: {response.status_code}")
 
 
+# def clean_github(profile):
+#     try:
+#         # Parse the URL to extract path
+#         parsed_url = urlparse(profile)
+#
+#         # Extract the path (removing any trailing slashes)
+#         path = parsed_url.path.strip('/')
+#
+#         # Split the path and get the last part (the username)
+#         username = path.split('/')[-1]
+#
+#         # Return the cleaned username (remove any surrounding spaces or slashes)
+#         return username.strip().strip(".git").strip('.github.io')
+#
+#     except Exception as e:
+#         # Handle any exception and return a meaningful error message or None
+#         return None
+
+def clean_github(profile):
+    try:
+        url = re.sub(r'([^:])//+', r'\1/', profile.strip())
+
+        # Regular expression to match a GitHub profile URL and extract the username
+        pattern = r"https?://(www\.)?github\.com/([A-Za-z0-9\-]+)"
+        match = re.match(pattern, url.strip())
+
+        if match:
+            # Return the captured username from the match
+            return match.group(2)
+        else:
+            # If the URL does not match, return None
+            return None
+    except Exception as e:
+        # Handle any exception and return None
+        return None
+
+
 def bulk_started_status_check(queryset):
     """
     Check the started status of participants in bulk.
@@ -53,15 +93,19 @@ def bulk_started_status_check(queryset):
     :param queryset: Queryset of TeamMember objects
     :return: Dictionary of participant IDs and their started status
     """
-
+    count = 0
     for team_member in queryset:
         user_name = None
         try:
-            user_name = team_member.github_profile.split('/')[-1].strip().strip('/').strip()
+            user_name = clean_github(team_member.github_profile)
             if user_name:
+                count += 1
+                if count % 5 == 0:
+                    time.sleep(10)
                 team_member.started_conductor = has_user_starred_repo(user_name)
                 team_member.save()
                 logger.info(f"Updated started status for {team_member}")
         except Exception as e:
-            logger.error(f"Error updating started status for {team_member}: {e},{user_name}, {team_member.github_profile}")
+            logger.error(
+                f"Error updating started status for {team_member}: {e},{user_name}, {team_member.github_profile}")
             continue
