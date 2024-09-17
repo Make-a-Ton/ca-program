@@ -170,7 +170,7 @@ class TeamMemberAdmin(ImportExportModelAdmin):
     resource_class = TeamMemberResource
     list_display = ('name', 'email', 'phone_number', 'team', 'team_leader', 'started_conductor')
     search_fields = ('name', 'email', 'phone_number', 'team__name')
-    list_filter = ('team', 'team_leader')
+    list_filter = ('team', 'team_leader','started_conductor')
 
     actions = ['check_stars']
 
