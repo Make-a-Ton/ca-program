@@ -108,11 +108,11 @@ def bulk_started_status_check(queryset):
             if user_name:
                 count += 1
                 if count % 5 == 0:
-                    time.sleep(10)
+                    time.sleep(30)
                 team_member.started_conductor = has_user_starred_repo(user_name)
                 team_member.save()
-                logger.info(f"Updated started status for {team_member}")
+                logger.info(f"Updated started status for {team_member} to {team_member.started_conductor}")
         except Exception as e:
             logger.error(
                 f"Error updating started status for {team_member}: {e},{user_name}, {team_member.github_profile}")
-            continue
+            time.sleep(50)
