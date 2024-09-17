@@ -3,6 +3,8 @@ import re
 import time
 from urllib.parse import urlparse
 
+from django.conf import settings
+
 from ca.models import CampusAmbassador
 from makeaton.models import TeamMember
 
@@ -33,7 +35,11 @@ def has_user_starred_repo(username, repo_owner="conductor-oss", repo_name="condu
     url = f"https://api.github.com/users/{username}/starred"
 
     # Make a GET request to the API
-    response = requests.get(url)
+    response = requests.get(url,
+                            headers={
+                                "Accept": "application/vnd.github.v3+json",
+                                "Authorization": f"{settings.GITHUB_API_TOKEN}"
+                            })
 
     if response.status_code == 200:
         # Parse the JSON response
