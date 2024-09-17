@@ -98,6 +98,7 @@ def bulk_started_status_check(queryset):
         user_name = None
         try:
             user_name = clean_github(team_member.github_profile)
+            logger.info(f"Checking started status for {team_member}")
             if user_name:
                 count += 1
                 if count % 5 == 0:
