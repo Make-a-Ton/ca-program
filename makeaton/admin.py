@@ -90,6 +90,7 @@ class TeamMemberResource(resources.ModelResource):
                 team.leader = leader.first()
                 team.save()
         instance.team = team
+        instance.phone_number = phone_number
 
         coupon_code = row.get('Coupon Code (if any)', '')
 
@@ -154,7 +155,7 @@ class TeamMemberResource(resources.ModelResource):
             'Team Name( Ensure that other members have registered)'), clean_mobile_number(
             row.get("phone_number", '')), clean_mobile_number(row.get("Team Leader's Phone number", ''))
         phone_number = clean_mobile_number(phone_number)
-        already_exists = TeamMember.objects.filter(phone_number=phone_number).exists()
+        already_exists = TeamMember.objects.filter(phone_number__contains=phone_number.strip('+')).exists()
         valid = bool(team_name) and bool(phone_number) and not already_exists and bool(leader_phone)
         if not valid:
             return True
