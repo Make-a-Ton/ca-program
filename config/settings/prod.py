@@ -23,17 +23,23 @@ DATABASES = {
 ALLOWED_HOSTS = [
     'campus.makeaton.in',
     'ca.radr.in',
+    'ca.makeaton.in'
+    'team.makeaton.in'
 ]
 
 CSRF_TRUSTED_ORIGINS += [
     "https://ca.radr.in",
     "https://campus.makeaton.in",
+    "https://ca.makeaton.in"
+    "https://team.makeaton.in"
 ]
 
 # Additional CORS origins whitelist
 CORS_ORIGIN_WHITELIST += [
     "https://ca.radr.in",
     "https://campus.makeaton.in",
+    "https://ca.makeaton.in"
+    "https://team.makeaton.in"
 ]
 
 CORS_ORIGIN_ALLOW_ALL = False
