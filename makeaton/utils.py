@@ -124,4 +124,4 @@ def bulk_started_status_check(queryset):
             logger.error(
                 f"Error updating started status for {team_member}: {e},{user_name}, {team_member.github_profile}")
             time.sleep(50)
-        logger.info(f"Checked {count} participants completed in {(timezone.now() - start_time).seconds//60} minutes")
+    logger.info(f"Checked {count} participants completed in {(timezone.now() - start_time).seconds//60} minutes")
