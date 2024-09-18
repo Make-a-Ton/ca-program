@@ -4,6 +4,7 @@ import time
 from urllib.parse import urlparse
 
 from django.conf import settings
+from django.utils import timezone
 
 from ca.models import CampusAmbassador
 from makeaton.models import TeamMember
@@ -102,6 +103,9 @@ def bulk_started_status_check(queryset):
     count = 0
     for team_member in queryset:
         user_name = None
+        if team_member.last_start_checked and (timezone.now() - team_member.last_start_checked).seconds < 4*60*60:
+            logger.info(f"Skipping {team_member} as it was checked recently")
+            continue
         try:
             user_name = clean_github(team_member.github_profile)
             logger.info(f"Checking started status for {team_member}")
@@ -110,6 +114,7 @@ def bulk_started_status_check(queryset):
                 if count % 5 == 0:
                     time.sleep(30)
                 team_member.started_conductor = has_user_starred_repo(user_name)
+                team_member.last_start_checked = timezone.now()
                 team_member.save()
                 logger.info(f"Updated started status for {team_member} to {team_member.started_conductor}")
         except Exception as e:
