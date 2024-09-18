@@ -85,6 +85,10 @@ class TeamMemberResource(resources.ModelResource):
         if created:
             team.conductor_track = row.get('Do you want to compete in Conductor Track (exclusive prizes)',
                                            'no').lower() == 'yes'
+            leader = User.objects.filter(mobile_number__contains=leader_phone.strip('+'))
+            if leader.exists():
+                team.leader = leader.first()
+                team.save()
         instance.team = team
 
         coupon_code = row.get('Coupon Code (if any)', '')
@@ -123,6 +127,8 @@ class TeamMemberResource(resources.ModelResource):
                     grp = Group.objects.get_or_create(name='Team Leader')
                     user.groups.add(grp[0])
                     user.save()
+                    team.leader = user
+                    team.save()
 
     def after_import(self, dataset, result, **kwargs):
         from makeaton.utils import cross_match_referrals
@@ -224,35 +230,26 @@ class TeamAdmin(ImportExportModelAdmin):
     def refresh_leaders(self, request, queryset):
         count_success = 0
         count_fail = 0
-        queryset = queryset.filter(leader__isnull=True)
+        queryset = queryset.order_by('id')
         for team in queryset:
-
             team_leader = User.objects.filter(mobile_number__contains=team.leader_phone.strip('+'))
             if team_leader.exists():
                 count_success += 1
                 team.leader = team_leader.first()
                 team.save()
-            else:
-                leader = TeamMember.objects.filter(phone_number__contains=team.leader_phone.strip('+')).order_by('id')
-                if leader.exists():
-                    try:
-                        user = User.objects.create(
-                            email=leader.first().email,
-                            full_name=leader.first().name,
-                            mobile_number=leader.first().phone_number,
-                            is_staff=True,
-                            is_active=True
-                        )
-                        grp = Group.objects.get_or_create(name='Team Leader')
-                        user.groups.add(grp[0])
-                        user.save()
-                        count_success += 1
-                    except Exception as e:
-                        logger.error(e)
-                        count_fail += 1
-                else:
-                    count_fail += 1
+            if team_leader.exists() and Team.objects.filter(leader=team_leader.first()).count() > 1:
+                dup_teams = Team.objects.filter(leader=team_leader.first()).exclude(id=team.id)
+                all_members = TeamMember.objects.filter(team__id__in=dup_teams.values_list('id', flat=True))
+                for member in all_members:
+                    member.team = team
+                    member.save()
+                dup_teams.delete()
         self.message_user(request, f"Successfully updated {count_success} teams. Failed to update {count_fail} teams.")
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).annotate(
+            member_no=Count('members')
+        ).order_by('-member_no')
 
 
 @admin.register(Participants)
@@ -268,6 +265,15 @@ class ParticipantsAdmin(admin.ModelAdmin):
         if not request.user.is_superuser:
             return super().get_queryset(request).filter(referral=request.user.campusambassador)
         return super().get_queryset(request)
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_add_permission(self, request):
+        return False
 
 
 @admin.register(Leaderboard)
@@ -330,7 +336,7 @@ class TeamLeaderAdmin(admin.ModelAdmin):
 
     inlines = [TeamInline]
     exclude = ['is_active', 'is_staff', 'is_superuser', 'groups', 'deleted', 'deleted_at', 'deleted_by', 'created_at',
-               'updated_at','password','id','user_permissions','last_login','date_joined']
+               'updated_at', 'password', 'id', 'user_permissions', 'last_login', 'date_joined']
 
     def get_queryset(self, request):
         return Group.objects.get(name='Team Leader').user_set.all().annotate(
@@ -339,7 +345,6 @@ class TeamLeaderAdmin(admin.ModelAdmin):
 
     def team_count(self, obj):
         return Team.objects.filter(leader=obj).count()
-
 
     def has_change_permission(self, request, obj=None):
         return False

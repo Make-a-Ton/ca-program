@@ -29,7 +29,7 @@ class Team(Model):
 
 
 class TeamMember(Model):
-    team = models.ForeignKey(Team, on_delete=models.CASCADE)  # Links the member to a team
+    team = models.ForeignKey(Team, on_delete=models.CASCADE,related_name='members')  # Links the member to a team
     name = models.CharField(max_length=255)
     email = models.EmailField()
     phone_number = models.CharField(max_length=15)  # Cleaned phone number
