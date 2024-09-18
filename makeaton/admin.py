@@ -156,7 +156,7 @@ class TeamMemberResource(resources.ModelResource):
             row.get("phone_number", '')), clean_mobile_number(row.get("Team Leader's Phone number", ''))
         phone_number = clean_mobile_number(phone_number)
         already_exists = TeamMember.objects.filter(phone_number__contains=phone_number.strip('+')).exists()
-        valid = bool(team_name) and bool(phone_number) and not already_exists and bool(leader_phone) and phone_number != '+91'
+        valid = bool(team_name) and bool(phone_number) and not already_exists and bool(leader_phone) and leader_phone != '+91'
         if not valid:
             return True
         return super().skip_row(instance, original, row, import_validation_errors)
