@@ -12,3 +12,6 @@ class CampusAmbassador(Model):
     course = models.CharField(max_length=255)
     year = models.IntegerField()
     coupon_code = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.user.full_name + " - " + self.coupon_code
