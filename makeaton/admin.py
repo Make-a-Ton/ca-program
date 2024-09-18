@@ -278,7 +278,7 @@ class ParticipantsAdmin(admin.ModelAdmin):
 
 @admin.register(Leaderboard)
 class LeaderboardAdmin(admin.ModelAdmin):
-    list_display = ('rank', 'name', 'college_name', 'referral_count')
+    list_display = ('rank', 'name', 'college_name',)
     fields = ['name', 'college']
 
     def name(self, obj):
@@ -287,8 +287,6 @@ class LeaderboardAdmin(admin.ModelAdmin):
     def college_name(self, obj):
         return obj.college
 
-    def referral_count(self, obj):
-        return obj.referral_count
 
     def get_queryset(self, request):
         # Filter Campus Ambassadors who have referrals, and among the referred members, only include those who have started_conductor=True
