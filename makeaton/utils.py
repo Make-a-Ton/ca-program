@@ -56,6 +56,11 @@ def has_user_starred_repo(username, repo_owner="conductor-oss", repo_name="condu
                 return True
 
         return False  # Repo not found in the starred list
+    if response.status_code == 404:
+        return False
+    if response.status_code == 403:
+        logger.error(f"Rate limit exceeded for {username}")
+        raise Exception(f"Rate limit exceeded for {username}")
     else:
         raise Exception(f"Failed to fetch starred repos: {response.status_code}")
 
@@ -128,5 +133,4 @@ def bulk_started_status_check(queryset):
         except Exception as e:
             logger.error(
                 f"Error updating started status for {team_member}: {e},{user_name}, {team_member.github_profile}")
-            break
     logger.info(f"Checked {count} participants completed in {(timezone.now() - start_time).seconds//60} minutes")
