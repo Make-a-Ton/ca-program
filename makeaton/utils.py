@@ -101,9 +101,10 @@ def bulk_started_status_check(queryset):
     :return: Dictionary of participant IDs and their started status
     """
     count = 0
+    start_time = timezone.now()
     for team_member in queryset:
         user_name = None
-        if team_member.last_start_checked and (timezone.now() - team_member.last_start_checked).seconds < 4*60*60:
+        if team_member.last_start_checked and (timezone.now() - team_member.last_start_checked).seconds < 4 * 60 * 60:
             logger.info(f"Skipping {team_member} as it was checked recently")
             continue
         try:
@@ -111,8 +112,10 @@ def bulk_started_status_check(queryset):
             logger.info(f"Checking started status for {team_member}")
             if user_name:
                 count += 1
+                if count % 2 == 0:
+                    time.sleep(10)
                 if count % 5 == 0:
-                    time.sleep(30)
+                    time.sleep(60)
                 team_member.started_conductor = has_user_starred_repo(user_name)
                 team_member.last_start_checked = timezone.now()
                 team_member.save()
@@ -121,3 +124,4 @@ def bulk_started_status_check(queryset):
             logger.error(
                 f"Error updating started status for {team_member}: {e},{user_name}, {team_member.github_profile}")
             time.sleep(50)
+        logger.info(f"Checked {count} participants completed in {(timezone.now() - start_time).seconds//60} minutes")
