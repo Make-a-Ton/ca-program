@@ -11,6 +11,10 @@ from makeaton.models import TeamMember
 
 logger = logging.getLogger('home')
 
+RATE_LIMIT_PER_SECOND = 1
+RATE_LIMIT_PER_MINUTE = 80  # Maximum allowable requests per minute
+REQUEST_DELAY = 1 / RATE_LIMIT_PER_SECOND  # Time to wait between requests (approx. 0.75 sec)
+
 
 def cross_match_referrals():
     for ca in CampusAmbassador.objects.all():
@@ -114,10 +118,9 @@ def bulk_started_status_check(queryset):
             logger.info(f"Checking started status for {team_member}")
             if user_name:
                 count += 1
-                if count % 2 == 0:
-                    time.sleep(10)
-                if count % 5 == 0:
-                    time.sleep(30)
+                time.sleep(REQUEST_DELAY)
+                if count % RATE_LIMIT_PER_MINUTE == 0:
+                    time.sleep(60)
                 team_member.started_conductor = has_user_starred_repo(user_name)
                 team_member.last_start_checked = timezone.now()
                 team_member.save()
@@ -125,5 +128,5 @@ def bulk_started_status_check(queryset):
         except Exception as e:
             logger.error(
                 f"Error updating started status for {team_member}: {e},{user_name}, {team_member.github_profile}")
-            time.sleep(60)
+            break
     logger.info(f"Checked {count} participants completed in {(timezone.now() - start_time).seconds//60} minutes")
