@@ -39,7 +39,7 @@ def has_user_starred_repo(username, repo_owner="conductor-oss", repo_name="condu
     response = requests.get(url,
                             headers={
                                 "Accept": "application/vnd.github.v3+json",
-                                "Authorization": f"{settings.GITHUB_API_TOKEN}"
+                                "Authorization": f"token {settings.GITHUB_API_TOKEN}"
                             })
 
     if response.status_code == 200:
@@ -99,6 +99,8 @@ def bulk_started_status_check(queryset):
 
     :param queryset: Queryset of TeamMember objects
     :return: Dictionary of participant IDs and their started status
+    https://api.github.com/repos/conductor-oss/conductor/stargazers?per_page=100&page=3
+    change to this url
     """
     count = 0
     start_time = timezone.now()
@@ -115,7 +117,7 @@ def bulk_started_status_check(queryset):
                 if count % 2 == 0:
                     time.sleep(10)
                 if count % 5 == 0:
-                    time.sleep(60)
+                    time.sleep(30)
                 team_member.started_conductor = has_user_starred_repo(user_name)
                 team_member.last_start_checked = timezone.now()
                 team_member.save()
@@ -123,5 +125,5 @@ def bulk_started_status_check(queryset):
         except Exception as e:
             logger.error(
                 f"Error updating started status for {team_member}: {e},{user_name}, {team_member.github_profile}")
-            time.sleep(50)
+            time.sleep(60)
     logger.info(f"Checked {count} participants completed in {(timezone.now() - start_time).seconds//60} minutes")
