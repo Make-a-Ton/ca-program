@@ -278,7 +278,7 @@ class ParticipantsAdmin(admin.ModelAdmin):
 
 @admin.register(Leaderboard)
 class LeaderboardAdmin(admin.ModelAdmin):
-    list_display = ('name', 'college_name',)
+    list_display = ('rank', 'name', 'college_name', 'referral_count')
     fields = ['name', 'college']
 
     def name(self, obj):
@@ -287,11 +287,26 @@ class LeaderboardAdmin(admin.ModelAdmin):
     def college_name(self, obj):
         return obj.college
 
+    def referral_count(self, obj):
+        return obj.referral_count
+
     def get_queryset(self, request):
         # Filter Campus Ambassadors who have referrals, and among the referred members, only include those who have started_conductor=True
-        return super().get_queryset(request).annotate(
+        queryset = super().get_queryset(request).annotate(
             referral_count=Count('referrals', filter=Q(referrals__started_conductor=True))
         ).filter(referral_count__gt=0).order_by('-referral_count')
+        # Save the queryset so it can be used in the rank calculation
+        self.rank_cache = queryset
+        return queryset
+
+    def rank(self, obj):
+        # Rank is based on the queryset ordering
+        for idx, item in enumerate(self.rank_cache, start=1):
+            if item == obj:
+                return idx
+        return None
+
+    rank.short_description = 'Rank'
 
 
 @admin.register(MyTeam)
