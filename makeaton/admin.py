@@ -1,3 +1,4 @@
+from django.contrib.admin import SimpleListFilter
 from django.contrib.auth.models import Group
 from django.db.models import Count, Q
 from import_export import resources, fields
@@ -181,7 +182,28 @@ class TeamMemberAdmin(ImportExportModelAdmin):
 class TeamMemberInline(admin.StackedInline):
     model = TeamMember
     extra = 0
-    exclude = ['is_active', 'is_staff', 'is_superuser', 'groups','deleted','deleted_at','deleted_by','created_at','updated_at']
+    exclude = ['is_active', 'is_staff', 'is_superuser', 'groups', 'deleted', 'deleted_at', 'deleted_by', 'created_at',
+               'updated_at']
+
+
+class HasLeaderFilter(SimpleListFilter):
+    title = 'Has Leader'  # The title shown in the filter dropdown
+    parameter_name = 'has_leader'  # The URL parameter for the filter
+
+    def lookups(self, request, model_admin):
+        # Defines the two filter options ('Yes' and 'No')
+        return (
+            ('yes', 'Has Leader'),
+            ('no', 'No Leader'),
+        )
+
+    def queryset(self, request, queryset):
+        # Filters based on whether the team has a leader or not
+        if self.value() == 'yes':
+            return queryset.exclude(leader__isnull=True)
+        elif self.value() == 'no':
+            return queryset.filter(leader__isnull=True)
+        return queryset
 
 
 @admin.register(Team)
@@ -190,11 +212,47 @@ class TeamAdmin(ImportExportModelAdmin):
     list_display = ('name', 'conductor_track', 'leader_phone', 'member_count')
     search_fields = ('name', 'leader_phone')
     inlines = [TeamMemberInline]
+    list_filter = (HasLeaderFilter,)  # Adding the custom filter here
+
+    actions = ['refresh_leaders']
 
     def member_count(self, obj):
         return obj.members.count()
 
     member_count.short_description = 'Member Count'
+
+    def refresh_leaders(self, request, queryset):
+        count_success = 0
+        count_fail = 0
+        for team in queryset:
+
+            team_leader = User.objects.filter(mobile_number__contains=team.leader_phone.strip('+'))
+            if team_leader.exists():
+                count_success += 1
+                team.leader = team_leader.first()
+                team.save()
+            else:
+
+                leader = TeamMember.objects.filter(phone_number__contains=team.leader_phone.strip('+')).order_by('id')
+                if leader.exists():
+                    try:
+                        user = User.objects.create(
+                            email=leader.first().email,
+                            full_name=leader.first().name,
+                            mobile_number=leader.first().phone_number,
+                            is_staff=True,
+                            is_active=True
+                        )
+                        grp = Group.objects.get_or_create(name='Team Leader')
+                        user.groups.add(grp[0])
+                        user.save()
+                        count_success += 1
+                    except Exception as e:
+                        logger.error(e)
+                        count_fail += 1
+                else:
+                    count_fail += 1
+        self.message_user(request, f"Successfully updated {count_success} teams. Failed to update {count_fail} teams.")
 
 
 @admin.register(Participants)
@@ -257,7 +315,3 @@ class MyTeamAdmin(admin.ModelAdmin):
 
     def has_add_permission(self, request):
         return False
-
-
-
-
