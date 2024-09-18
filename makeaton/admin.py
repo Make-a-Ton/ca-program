@@ -224,6 +224,7 @@ class TeamAdmin(ImportExportModelAdmin):
     def refresh_leaders(self, request, queryset):
         count_success = 0
         count_fail = 0
+        queryset = queryset.filter(leader__isnull=True)
         for team in queryset:
 
             team_leader = User.objects.filter(mobile_number__contains=team.leader_phone.strip('+'))
@@ -232,7 +233,6 @@ class TeamAdmin(ImportExportModelAdmin):
                 team.leader = team_leader.first()
                 team.save()
             else:
-
                 leader = TeamMember.objects.filter(phone_number__contains=team.leader_phone.strip('+')).order_by('id')
                 if leader.exists():
                     try:
