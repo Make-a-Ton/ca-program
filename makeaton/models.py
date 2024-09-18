@@ -1,5 +1,6 @@
 from django.db import models
 
+from authentication.models import User
 from base.models import Model
 from ca.models import CampusAmbassador
 
@@ -87,4 +88,11 @@ class MyTeam(Team):
     class Meta:
         verbose_name = "My Team"
         verbose_name_plural = "My Team"
+        proxy = True
+
+
+class TeamLeader(User):
+    class Meta:
+        verbose_name = "Team Leader"
+        verbose_name_plural = "Team Leaders"
         proxy = True

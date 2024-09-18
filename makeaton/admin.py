@@ -7,7 +7,7 @@ from django.contrib import admin
 
 from base.utils import clean_mobile_number
 from ca.models import CampusAmbassador
-from .models import Team, TeamMember, Participants, Leaderboard, MyTeam
+from .models import Team, TeamMember, Participants, Leaderboard, MyTeam, TeamLeader
 from authentication.models import User
 import logging
 
@@ -306,6 +306,40 @@ class MyTeamAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         return super().get_queryset(request).filter(leader=request.user)
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_add_permission(self, request):
+        return False
+
+
+class TeamInline(admin.StackedInline):
+    model = Team
+    extra = 0
+    exclude = ['is_active', 'is_staff', 'is_superuser', 'groups', 'deleted', 'deleted_at', 'deleted_by', 'created_at',
+               'updated_at']
+
+
+@admin.register(TeamLeader)
+class TeamLeaderAdmin(admin.ModelAdmin):
+    list_display = ('mobile_number', 'full_name', 'email', 'team_count')
+
+    inlines = [TeamInline]
+    exclude = ['is_active', 'is_staff', 'is_superuser', 'groups', 'deleted', 'deleted_at', 'deleted_by', 'created_at',
+               'updated_at','password','id','user_permissions','last_login','date_joined']
+
+    def get_queryset(self, request):
+        return Group.objects.get(name='Team Leader').user_set.all().annotate(
+            team_count=Count('team_leader')
+        ).order_by('-team_count')
+
+    def team_count(self, obj):
+        return Team.objects.filter(leader=obj).count()
+
 
     def has_change_permission(self, request, obj=None):
         return False
