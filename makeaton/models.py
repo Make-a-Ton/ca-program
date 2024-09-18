@@ -13,7 +13,7 @@ class Team(Model):
     project_details = models.TextField(blank=True, null=True)  # Details about projects built or planned
     leader_phone = models.CharField(max_length=15)  # Cleaned phone number of the team leader
     leader = models.ForeignKey('authentication.User', on_delete=models.RESTRICT,
-                               related_name='team_leader',blank=True, null=True)  # Team leader
+                               related_name='team_leader', blank=True, null=True)  # Team leader
 
     def __str__(self):
         return self.name
@@ -21,10 +21,6 @@ class Team(Model):
     @property
     def members(self):
         return self.teammember_set.all()
-
-    @property
-    def leader(self):
-        return self.members.filter(team_leader='Yes').first()
 
     @property
     def member_count(self):
@@ -84,4 +80,11 @@ class Leaderboard(CampusAmbassador):
     class Meta:
         verbose_name = "Leaderboard"
         verbose_name_plural = "Leaderboard"
+        proxy = True
+
+
+class MyTeam(Team):
+    class Meta:
+        verbose_name = "My Team"
+        verbose_name_plural = "My Team"
         proxy = True

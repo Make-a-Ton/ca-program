@@ -9,19 +9,7 @@ def is_sha256_hash(text):
     # Check if the text contains 'sha256' substring
     if 'sha256' not in text:
         return False
-
-    # Check if the hash has the expected length and format
-    sha256_hash_length = 64  # SHA-256 produces a 64-character hex string
-    sha256_hash_pattern = r'[a-fA-F0-9]{64}'  # 64 hex characters
-
-    # Find the portion of the string that could be the SHA-256 hash
-    possible_hash = re.search(sha256_hash_pattern, text)
-
-    # If there's a match and the whole possible hash is the correct length, it's likely a SHA-256 hash
-    if possible_hash and len(possible_hash.group()) == sha256_hash_length:
-        return True
-
-    return False
+    return True
 
 
 @admin.register(User)
@@ -41,9 +29,7 @@ class UserAdmin(admin.ModelAdmin):
         # Get the password from the form if provided
         password = form.cleaned_data.get('password')
         if password:
-            print("Password: ", password)
             if not is_sha256_hash(password):
-                print("setting password")
                 obj.set_password(password)
             else:
                 obj.password = password

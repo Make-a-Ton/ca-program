@@ -6,7 +6,7 @@ from django.contrib import admin
 
 from base.utils import clean_mobile_number
 from ca.models import CampusAmbassador
-from .models import Team, TeamMember, Participants, Leaderboard
+from .models import Team, TeamMember, Participants, Leaderboard, MyTeam
 from authentication.models import User
 import logging
 
@@ -169,7 +169,7 @@ class TeamMemberAdmin(ImportExportModelAdmin):
     resource_class = TeamMemberResource
     list_display = ('name', 'email', 'phone_number', 'team', 'team_leader', 'started_conductor')
     search_fields = ('name', 'email', 'phone_number', 'team__name')
-    list_filter = ('team', 'team_leader', 'started_conductor','referral')
+    list_filter = ('team', 'team_leader', 'started_conductor', 'referral')
 
     actions = ['check_stars']
 
@@ -178,9 +178,10 @@ class TeamMemberAdmin(ImportExportModelAdmin):
         # bulk_started_status_check(queryset)
 
 
-class TeamMemberInline(admin.TabularInline):
+class TeamMemberInline(admin.StackedInline):
     model = TeamMember
     extra = 0
+    exclude = ['is_active', 'is_staff', 'is_superuser', 'groups','deleted','deleted_at','deleted_by','created_at','updated_at']
 
 
 @admin.register(Team)
@@ -231,3 +232,32 @@ class ParticipantsAdmin(admin.ModelAdmin):
         return super().get_queryset(request).annotate(
             referral_count=Count('referrals', filter=Q(referrals__started_conductor=True))
         ).filter(referral_count__gt=0).order_by('-referral_count')
+
+
+@admin.register(MyTeam)
+class MyTeamAdmin(admin.ModelAdmin):
+    list_display = (
+        'name', 'conductor_track', 'leader_phone'
+    )
+
+    fields = (
+        'name', 'leader_phone', 'conductor_track',
+    )
+
+    inlines = [TeamMemberInline]
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).filter(leader=request.user)
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_add_permission(self, request):
+        return False
+
+
+
+
