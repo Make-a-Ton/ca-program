@@ -1,8 +1,13 @@
 import re
-
+import threading
 from django.contrib import admin
+from authentication.utils import send_email, send_bulk_email
+from django.template.loader import render_to_string
+from django.utils.crypto import get_random_string
+from django.utils.html import strip_tags
 
 from authentication.models import User
+from config import settings
 
 
 def is_sha256_hash(text):
@@ -15,15 +20,16 @@ def is_sha256_hash(text):
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
     list_display = ('email', 'full_name', 'mobile_number', 'is_active', 'is_staff', 'is_superuser')
-    list_filter = ('is_active', 'is_staff', 'is_superuser','groups')
+    list_filter = ('is_active', 'is_staff', 'is_superuser', 'groups')
     search_fields = ('email', 'full_name', 'mobile_number')
     ordering = ('email',)
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
         ('Personal info', {'fields': ('full_name', 'mobile_number',)}),
-        ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser','groups')}),
+        ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups')}),
         ('Important dates', {'fields': ('last_login', 'date_joined')}),
     )
+    actions = ('set_password',)
 
     def save_model(self, request, obj, form, change):
         # Get the password from the form if provided
@@ -38,3 +44,8 @@ class UserAdmin(admin.ModelAdmin):
             form.cleaned_data.pop('password', None)
 
         super().save_model(request, obj, form, change)
+
+    def set_password(self, request, queryset):
+        threading.Thread(target=send_bulk_email, args=(queryset,)).start()
+
+        self.message_user(request, 'Emails with password will be sent to the selected users.')

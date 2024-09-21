@@ -7,7 +7,7 @@ from django.contrib import admin
 
 from base.utils import clean_mobile_number
 from ca.models import CampusAmbassador
-from .models import Team, TeamMember, Participants, Leaderboard, MyTeam, TeamLeader
+from .models import Team, TeamMember, Participants, Leaderboard, MyTeam, TeamLeader, MyTeamMember
 from authentication.models import User
 import logging
 
@@ -16,6 +16,8 @@ import threading
 from .utils import bulk_started_status_check
 
 logger = logging.getLogger('home')
+
+common_exclude = ['is_active', 'deleted', 'deleted_at', 'deleted_by', 'created_at', 'updated_at']
 
 
 class TeamMemberResource(resources.ModelResource):
@@ -156,7 +158,8 @@ class TeamMemberResource(resources.ModelResource):
             row.get("phone_number", '')), clean_mobile_number(row.get("Team Leader's Phone number", ''))
         phone_number = clean_mobile_number(phone_number)
         already_exists = TeamMember.objects.filter(phone_number__contains=phone_number.strip('+')).exists()
-        valid = bool(team_name) and bool(phone_number) and not already_exists and bool(leader_phone) and leader_phone != '+91'
+        valid = bool(team_name) and bool(phone_number) and not already_exists and bool(
+            leader_phone) and leader_phone != '+91'
         if not valid:
             return True
         return super().skip_row(instance, original, row, import_validation_errors)
@@ -188,6 +191,13 @@ class TeamMemberAdmin(ImportExportModelAdmin):
 
 class TeamMemberInline(admin.StackedInline):
     model = TeamMember
+    extra = 0
+    exclude = ['is_active', 'is_staff', 'is_superuser', 'groups', 'deleted', 'deleted_at', 'deleted_by', 'created_at',
+               'updated_at']
+
+
+class MyTeamMemberInline(admin.StackedInline):
+    model = MyTeamMember
     extra = 0
     exclude = ['is_active', 'is_staff', 'is_superuser', 'groups', 'deleted', 'deleted_at', 'deleted_by', 'created_at',
                'updated_at']
@@ -288,7 +298,6 @@ class LeaderboardAdmin(admin.ModelAdmin):
     def college_name(self, obj):
         return obj.college
 
-
     def get_queryset(self, request):
         # Filter Campus Ambassadors who have referrals, and among the referred members, only include those who have started_conductor=True
         queryset = super().get_queryset(request).annotate(
@@ -313,15 +322,30 @@ class MyTeamAdmin(admin.ModelAdmin):
     list_display = (
         'name', 'conductor_track', 'leader_phone'
     )
+    exclude = common_exclude
 
-    fields = (
-        'name', 'leader_phone', 'conductor_track',
-    )
-
-    inlines = [TeamMemberInline]
+    inlines = [MyTeamMemberInline]
 
     def get_queryset(self, request):
         return super().get_queryset(request).filter(leader=request.user)
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_add_permission(self, request):
+        return False
+
+
+@admin.register(MyTeamMember)
+class MyTeamMemberAdmin(admin.ModelAdmin):
+    list_display = ('name', 'email', 'phone_number', 'started_conductor')
+    exclude = common_exclude
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).filter(team__leader=request.user)
 
     def has_change_permission(self, request, obj=None):
         return False
