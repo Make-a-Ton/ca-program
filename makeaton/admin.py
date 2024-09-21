@@ -342,7 +342,7 @@ class MyTeamAdmin(admin.ModelAdmin):
 @admin.register(MyTeamMember)
 class MyTeamMemberAdmin(admin.ModelAdmin):
     list_display = ('name', 'email', 'phone_number', 'started_conductor')
-    exclude = common_exclude
+    exclude = common_exclude + ['approval_status']
 
     def get_queryset(self, request):
         return super().get_queryset(request).filter(team__leader=request.user)
