@@ -19,7 +19,7 @@ from config import settings
 def send_email(receiver_email, user, random_pass):
     sender_email = settings.EMAIL_HOST_USER
     password = settings.EMAIL_HOST_PASSWORD
-    receiver_email = "contact.makeaton@gmail.com"
+    # receiver_email = "contact.makeaton@gmail.com"
 
     message = MIMEMultipart("alternative")
     message["Subject"] = "Dashboard for Make-A-Ton 7.0"
