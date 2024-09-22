@@ -248,13 +248,20 @@ class TeamAdmin(ImportExportModelAdmin):
                 count_success += 1
                 team.leader = team_leader.first()
                 team.save()
-            if team_leader.exists() and Team.objects.filter(leader=team_leader.first()).count() > 1:
-                dup_teams = Team.objects.filter(leader=team_leader.first()).exclude(id=team.id)
+            if team_leader.exists() and Team.objects.filter(leader_phone__contains=team_leader.first().mobile_number.strip('+')).count() > 1:
+                dup_teams = Team.objects.filter(leader_phone__contains=team_leader.first().mobile_number.strip('+')).exclude(id=team.id)
                 all_members = TeamMember.objects.filter(team__id__in=dup_teams.values_list('id', flat=True))
                 for member in all_members:
                     member.team = team
                     member.save()
                 dup_teams.delete()
+            # all_members = TeamMember.objects.filter(team__leader_phone__contains=team.leader_phone.strip('+'))
+            # for member in all_members:
+            #     member.team = team
+            #     member.save()
+            #     print(member.name)
+            
+                
         self.message_user(request, f"Successfully updated {count_success} teams. Failed to update {count_fail} teams.")
 
     def get_queryset(self, request):

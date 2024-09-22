@@ -19,6 +19,8 @@ staticfiles
 
 .vscode
 
+*.pyc
+
 node_modules
 .next
 admin/.next
