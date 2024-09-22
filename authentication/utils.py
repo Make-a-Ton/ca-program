@@ -71,7 +71,11 @@ def send_bulk_email(queryset):
                 sleep(random.randint(200, 210))
             else:
                 sleep(random.randint(4, 10))
+
             send_email(user.email, user, random_password)
+
             i += 1
         except Exception as e:
+            user.password=''
+            user.save()
             logger.error(f"Error in sending email to {user.email}: {e}")
