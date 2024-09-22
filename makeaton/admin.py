@@ -7,7 +7,7 @@ from django.contrib import admin
 
 from base.utils import clean_mobile_number
 from ca.models import CampusAmbassador
-from .models import Team, TeamMember, Participants, Leaderboard, MyTeam, TeamLeader, MyTeamMember
+from .models import Team, TeamMember, Participants, Leaderboard, MyTeam, TeamLeader, MyTeamMember, Issue, RaiseAnIssue
 from authentication.models import User
 import logging
 
@@ -395,3 +395,44 @@ class TeamLeaderAdmin(admin.ModelAdmin):
 
     def has_add_permission(self, request):
         return False
+
+@admin.register(Issue)
+class IssueAdmin(admin.ModelAdmin):
+    exclude = common_exclude
+    list_display = ('title', 'status', 'response')
+    def get_readonly_fields(self, request, obj=None):
+        return ('raised_by','title','description',)
+    def has_delete_permission(self, request, obj=None):
+        return False
+    def has_add_permission(self, request):
+        return False
+    
+
+@admin.register(RaiseAnIssue)
+class RaiseAnIssueAdmin(admin.ModelAdmin):
+    exclude = common_exclude
+    list_display = ('title', 'status',"response")
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if not request.user.is_superuser:
+            return qs.filter(raised_by=request.user)
+        return qs
+
+    def get_readonly_fields(self, request, obj=None):
+        if not request.user.is_superuser:
+            return ('response', 'status', 'raised_by')
+        return ('raised_by',)
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def save_model(self, request, obj, form, change):
+        if not change:  # Only set the raised_by field when creating a new object
+            obj.raised_by = request.user
+        super().save_model(request, obj, form, change)
+
+    def get_fields(self, request, obj=None):
+        fields = super().get_fields(request, obj)
+        if not request.user.is_superuser:
+            fields = [f for f in fields if f != 'raised_by']
+        return fields

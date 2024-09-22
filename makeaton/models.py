@@ -103,3 +103,20 @@ class MyTeamMember(TeamMember):
         verbose_name = "My Team Member"
         verbose_name_plural = "My Team Members"
         proxy = True
+
+class Issue(Model):
+    title = models.CharField(max_length=255)
+    description = models.TextField(default='Explain the issue in detail below\n\n\n\n\nMention the suggestions to be implemented below')  
+    status = models.CharField(max_length=50, default='Pending', choices=(('Pending', 'Pending'), ('Resolved', 'Resolved'), ('Rejected', 'Rejected')))
+    response = models.TextField(blank=True, null=True)
+    raised_by = models.ForeignKey(User, on_delete=models.RESTRICT, related_name='issues')
+
+
+    def __str__(self):
+        return self.title
+
+class RaiseAnIssue(Issue):
+    class Meta:
+        verbose_name = "Issue Raised"
+        verbose_name_plural = "Issues Raised"
+        proxy = True
