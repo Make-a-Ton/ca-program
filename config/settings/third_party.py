@@ -90,6 +90,12 @@ JAZZMIN_SETTINGS = {
     "topmenu_links": [
         # Url that gets reversed (Permissions can be added)
         {"name": "Dashboard", "url": "admin:index", "permissions": ["authentication.view_user"]},
+        {"name": "Instagram", "url": "https://makeaton.in/insta", "new_window": True},
+        {"name": "Whatsapp", "url": "https://makeaton.in/wa", "new_window": True},
+        {"name": "Telegram", "url": "https://makeaton.in/telegram", "new_window": True},
+        {"name": "𝕏", "url": "https://makeaton.in/x", "new_window": True},
+
+
     ],
 
     #############
