@@ -178,9 +178,9 @@ class TeamResource(resources.ModelResource):
 @admin.register(TeamMember)
 class TeamMemberAdmin(ImportExportModelAdmin):
     resource_class = TeamMemberResource
-    list_display = ('name', 'email', 'phone_number', 'team', 'team_leader', 'started_conductor')
+    list_display = ('name', 'email', 'phone_number', 'team', 'team_leader', 'starred_conductor')
     search_fields = ('name', 'email', 'phone_number', 'team__name')
-    list_filter = ('team', 'team_leader', 'started_conductor', 'referral')
+    list_filter = ('team', 'team_leader', 'starred_conductor', 'referral')
 
     actions = ['check_stars']
 
@@ -272,9 +272,9 @@ class TeamAdmin(ImportExportModelAdmin):
 
 @admin.register(Participants)
 class ParticipantsAdmin(admin.ModelAdmin):
-    list_display = ('name', 'phone_number', 'college_name', 'team', 'started_conductor')
+    list_display = ('name', 'phone_number', 'college_name', 'team', 'starred_conductor')
     search_fields = ('name', 'phone_number',)
-    list_filter = ['started_conductor']
+    list_filter = ['starred_conductor']
 
     fields = (
         'name', 'email', 'phone_number', 'college_name')
@@ -306,9 +306,9 @@ class LeaderboardAdmin(admin.ModelAdmin):
         return obj.college
 
     def get_queryset(self, request):
-        # Filter Campus Ambassadors who have referrals, and among the referred members, only include those who have started_conductor=True
+        # Filter Campus Ambassadors who have referrals, and among the referred members, only include those who have starred_conductor=True
         queryset = super().get_queryset(request).annotate(
-            referral_count=Count('referrals', filter=Q(referrals__started_conductor=True))
+            referral_count=Count('referrals', filter=Q(referrals__starred_conductor=True))
         ).filter(referral_count__gt=0).order_by('-referral_count')
         # Save the queryset so it can be used in the rank calculation
         self.rank_cache = queryset
@@ -348,7 +348,7 @@ class MyTeamAdmin(admin.ModelAdmin):
 
 @admin.register(MyTeamMember)
 class MyTeamMemberAdmin(admin.ModelAdmin):
-    list_display = ('name', 'email', 'phone_number', 'started_conductor')
+    list_display = ('name', 'email', 'phone_number', 'starred_conductor')
     exclude = common_exclude + ['approval_status']
 
     def get_queryset(self, request):

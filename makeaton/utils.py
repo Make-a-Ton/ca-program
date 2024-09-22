@@ -126,10 +126,10 @@ def bulk_started_status_check(queryset):
                 time.sleep(REQUEST_DELAY)
                 if count % RATE_LIMIT_PER_MINUTE == 0:
                     time.sleep(60)
-                team_member.started_conductor = has_user_starred_repo(user_name)
+                team_member.starred_conductor = has_user_starred_repo(user_name)
                 team_member.last_start_checked = timezone.now()
                 team_member.save()
-                logger.info(f"Updated started status for {team_member} to {team_member.started_conductor}")
+                logger.info(f"Updated started status for {team_member} to {team_member.starred_conductor}")
         except Exception as e:
             logger.error(
                 f"Error updating started status for {team_member}: {e},{user_name}, {team_member.github_profile}")

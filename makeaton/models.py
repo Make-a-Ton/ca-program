@@ -58,7 +58,7 @@ class TeamMember(Model):
     about = models.TextField(blank=True, null=True)  # About the participant
     diet = models.CharField(max_length=255, blank=True, null=True,
                             choices=(('Veg', 'Veg'), ('Non-Veg', 'Non-Veg')))  # Dietary preference
-    started_conductor = models.BooleanField(default=False)  # Whether the participant has started the Conductor Track
+    starred_conductor = models.BooleanField(default=False)  # Whether the participant has started the Conductor Track
     last_start_checked = models.DateTimeField(blank=True, null=True)  # Last time the start was checked
 
     def __str__(self):
