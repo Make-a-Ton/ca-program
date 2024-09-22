@@ -7,7 +7,7 @@ from django.contrib import admin
 
 from base.utils import clean_mobile_number
 from ca.models import CampusAmbassador
-from .models import Team, TeamMember, Participants, Leaderboard, MyTeam, TeamLeader, MyTeamMember
+from .models import Team, TeamMember, Participants, Leaderboard, MyTeam, TeamLeader, MyTeamMember, Issue, RaiseAnIssue
 from authentication.models import User
 import logging
 
@@ -178,9 +178,9 @@ class TeamResource(resources.ModelResource):
 @admin.register(TeamMember)
 class TeamMemberAdmin(ImportExportModelAdmin):
     resource_class = TeamMemberResource
-    list_display = ('name', 'email', 'phone_number', 'team', 'team_leader', 'started_conductor')
+    list_display = ('name', 'email', 'phone_number', 'team', 'team_leader', 'starred_conductor')
     search_fields = ('name', 'email', 'phone_number', 'team__name')
-    list_filter = ('team', 'team_leader', 'started_conductor', 'referral')
+    list_filter = ('team', 'team_leader', 'starred_conductor', 'referral')
 
     actions = ['check_stars']
 
@@ -248,13 +248,20 @@ class TeamAdmin(ImportExportModelAdmin):
                 count_success += 1
                 team.leader = team_leader.first()
                 team.save()
-            if team_leader.exists() and Team.objects.filter(leader=team_leader.first()).count() > 1:
-                dup_teams = Team.objects.filter(leader=team_leader.first()).exclude(id=team.id)
+            if team_leader.exists() and Team.objects.filter(leader_phone__contains=team_leader.first().mobile_number.strip('+')).count() > 1:
+                dup_teams = Team.objects.filter(leader_phone__contains=team_leader.first().mobile_number.strip('+')).exclude(id=team.id)
                 all_members = TeamMember.objects.filter(team__id__in=dup_teams.values_list('id', flat=True))
                 for member in all_members:
                     member.team = team
                     member.save()
                 dup_teams.delete()
+            # all_members = TeamMember.objects.filter(team__leader_phone__contains=team.leader_phone.strip('+'))
+            # for member in all_members:
+            #     member.team = team
+            #     member.save()
+            #     print(member.name)
+            
+                
         self.message_user(request, f"Successfully updated {count_success} teams. Failed to update {count_fail} teams.")
 
     def get_queryset(self, request):
@@ -265,9 +272,9 @@ class TeamAdmin(ImportExportModelAdmin):
 
 @admin.register(Participants)
 class ParticipantsAdmin(admin.ModelAdmin):
-    list_display = ('name', 'phone_number', 'college_name', 'team', 'started_conductor')
+    list_display = ('name', 'phone_number', 'college_name', 'team', 'starred_conductor')
     search_fields = ('name', 'phone_number',)
-    list_filter = ['started_conductor']
+    list_filter = ['starred_conductor']
 
     fields = (
         'name', 'email', 'phone_number', 'college_name')
@@ -299,9 +306,9 @@ class LeaderboardAdmin(admin.ModelAdmin):
         return obj.college
 
     def get_queryset(self, request):
-        # Filter Campus Ambassadors who have referrals, and among the referred members, only include those who have started_conductor=True
+        # Filter Campus Ambassadors who have referrals, and among the referred members, only include those who have starred_conductor=True
         queryset = super().get_queryset(request).annotate(
-            referral_count=Count('referrals', filter=Q(referrals__started_conductor=True))
+            referral_count=Count('referrals', filter=Q(referrals__starred_conductor=True))
         ).filter(referral_count__gt=0).order_by('-referral_count')
         # Save the queryset so it can be used in the rank calculation
         self.rank_cache = queryset
@@ -341,7 +348,7 @@ class MyTeamAdmin(admin.ModelAdmin):
 
 @admin.register(MyTeamMember)
 class MyTeamMemberAdmin(admin.ModelAdmin):
-    list_display = ('name', 'email', 'phone_number', 'started_conductor')
+    list_display = ('name', 'email', 'phone_number', 'starred_conductor')
     exclude = common_exclude + ['approval_status']
 
     def get_queryset(self, request):
@@ -388,3 +395,43 @@ class TeamLeaderAdmin(admin.ModelAdmin):
 
     def has_add_permission(self, request):
         return False
+
+@admin.register(Issue)
+class IssueAdmin(admin.ModelAdmin):
+    exclude = common_exclude
+    list_display = ('title', 'status', 'response','team')
+    def get_readonly_fields(self, request, obj=None):
+        return ('raised_by','title','description','team')
+    def has_add_permission(self, request):
+        return False
+    
+
+@admin.register(RaiseAnIssue)
+class RaiseAnIssueAdmin(admin.ModelAdmin):
+    exclude = common_exclude + ['team']
+    list_display = ('title', 'status',"response",)
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if not request.user.is_superuser:
+            return qs.filter(raised_by=request.user)
+        return qs
+
+    def get_readonly_fields(self, request, obj=None):
+        if not request.user.is_superuser:
+            return ('response', 'status', 'raised_by')
+        return ('raised_by',)
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def save_model(self, request, obj, form, change):
+        if not change:  # Only set the raised_by field when creating a new object
+            obj.raised_by = request.user
+            obj.team = Team.objects.filter(leader=request.user).first()
+        super().save_model(request, obj, form, change)
+
+    def get_fields(self, request, obj=None):
+        fields = super().get_fields(request, obj)
+        if not request.user.is_superuser:
+            fields = [f for f in fields if f != 'raised_by']
+        return fields
