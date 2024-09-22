@@ -399,9 +399,9 @@ class TeamLeaderAdmin(admin.ModelAdmin):
 @admin.register(Issue)
 class IssueAdmin(admin.ModelAdmin):
     exclude = common_exclude
-    list_display = ('title', 'status', 'response')
+    list_display = ('title', 'status', 'response','team')
     def get_readonly_fields(self, request, obj=None):
-        return ('raised_by','title','description',)
+        return ('raised_by','title','description','team')
     def has_delete_permission(self, request, obj=None):
         return False
     def has_add_permission(self, request):
@@ -410,8 +410,8 @@ class IssueAdmin(admin.ModelAdmin):
 
 @admin.register(RaiseAnIssue)
 class RaiseAnIssueAdmin(admin.ModelAdmin):
-    exclude = common_exclude
-    list_display = ('title', 'status',"response")
+    exclude = common_exclude + ['team']
+    list_display = ('title', 'status',"response",)
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         if not request.user.is_superuser:
@@ -429,6 +429,7 @@ class RaiseAnIssueAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         if not change:  # Only set the raised_by field when creating a new object
             obj.raised_by = request.user
+            obj.team = Team.objects.filter(leader=request.user).first()
         super().save_model(request, obj, form, change)
 
     def get_fields(self, request, obj=None):

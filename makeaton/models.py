@@ -110,7 +110,7 @@ class Issue(Model):
     status = models.CharField(max_length=50, default='Pending', choices=(('Pending', 'Pending'), ('Resolved', 'Resolved'), ('Rejected', 'Rejected')))
     response = models.TextField(blank=True, null=True)
     raised_by = models.ForeignKey(User, on_delete=models.RESTRICT, related_name='issues')
-
+    team = models.ForeignKey(Team, on_delete=models.RESTRICT, related_name='issues', blank=True, null=True)
 
     def __str__(self):
         return self.title
