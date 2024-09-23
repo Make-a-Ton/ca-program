@@ -26,7 +26,7 @@ class TeamMemberResource(resources.ModelResource):
     """
     # Define field mappings between CSV columns and model fields
     # team_name = fields.Field(attribute='team__name',
-    #                          column_name='Team Name( Ensure that other members have registered)')
+    #                          column_name='Team Name( Ensure that other members have registered with same team name)')
     # leader_phone = fields.Field(attribute='team__leader_phone', column_name="Team Leader's Phone number")
     name = fields.Field(attribute='name', column_name='name')
     email = fields.Field(attribute='email', column_name='email')
@@ -71,7 +71,7 @@ class TeamMemberResource(resources.ModelResource):
 
     def before_save_instance(self, instance, row, **kwargs):
 
-        team_name = row.get('Team Name( Ensure that other members have registered)')
+        team_name = row.get('Team Name( Ensure that other members have registered with same team name)')
         leader_phone = clean_mobile_number(row.get("Team Leader's Phone number", ''))
         phone_number = clean_mobile_number(row.get('phone_number', ''))
         row['phone_number'] = phone_number
@@ -154,7 +154,7 @@ class TeamMemberResource(resources.ModelResource):
     def skip_row(self, instance, original, row, import_validation_errors=None):
         # Skip rows where the coupon code is empty
         team_name, phone_number, leader_phone = row.get(
-            'Team Name( Ensure that other members have registered)'), clean_mobile_number(
+            'Team Name( Ensure that other members have registered with same team name)'), clean_mobile_number(
             row.get("phone_number", '')), clean_mobile_number(row.get("Team Leader's Phone number", ''))
         phone_number = clean_mobile_number(phone_number)
         already_exists = TeamMember.objects.filter(phone_number__contains=phone_number.strip('+')).exists()
