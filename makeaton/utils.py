@@ -2,10 +2,11 @@ import logging
 import re
 import time
 from urllib.parse import urlparse
-
+import requests
 from django.conf import settings
 from django.utils import timezone
 
+from base.utils import clean_mobile_number
 from ca.models import CampusAmbassador
 from makeaton.models import TeamMember
 
@@ -24,7 +25,21 @@ def cross_match_referrals():
                 f"Matched {ca} to {TeamMember.objects.filter(coupon_code=ca.coupon_code, referral__isnull=True)}")
 
 
-import requests
+def update_leader_phone_numbers(dataset):
+    print("Sleeping for 120 seconds")
+    time.sleep(120)
+    print("Waking up")
+    for data in dataset:
+        try:
+            phone,leader_phone = clean_mobile_number(data[3]),clean_mobile_number(data[21])
+            team_member = TeamMember.objects.get(phone_number=phone)
+            if not team_member.leader_phone_number:
+                team_member.leader_phone_number = leader_phone
+                team_member.save()
+            # else:
+            #     logger.info(f"Leader phone number already exists for {team_member}")
+        except TeamMember.DoesNotExist:
+            logger.error(f"Team member with phone number {data[3]} not found")
 
 
 def has_user_starred_repo(username, repo_owner="conductor-oss", repo_name="conductor"):
@@ -133,4 +148,4 @@ def bulk_started_status_check(queryset):
         except Exception as e:
             logger.error(
                 f"Error updating started status for {team_member}: {e},{user_name}, {team_member.github_profile}")
-    logger.info(f"Checked {count} participants completed in {(timezone.now() - start_time).seconds//60} minutes")
+    logger.info(f"Checked {count} participants completed in {(timezone.now() - start_time).seconds // 60} minutes")

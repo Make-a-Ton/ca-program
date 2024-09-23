@@ -134,11 +134,9 @@ class TeamMemberResource(resources.ModelResource):
                     team.save()
 
     def after_import(self, dataset, result, **kwargs):
-        from makeaton.utils import cross_match_referrals
-        cross_match_referrals()
-        # Assign the team to the team member instance
-
-        # instance.phone_number = clean_mobile_number(row.get('Phone Number', ''))  # Clean the phone number
+        from makeaton.utils import cross_match_referrals, update_leader_phone_numbers
+        threading.Thread(target=cross_match_referrals).start()
+        threading.Thread(target=update_leader_phone_numbers, args=(dataset,)).start()
 
     def after_save_instance(self, instance, row, **kwargs):
         leader_phone = clean_mobile_number(row.get("Team Leader's Phone number", ''))
@@ -158,9 +156,11 @@ class TeamMemberResource(resources.ModelResource):
             row.get("phone_number", '')), clean_mobile_number(row.get("Team Leader's Phone number", ''))
         phone_number = clean_mobile_number(phone_number)
         already_exists = TeamMember.objects.filter(phone_number__contains=phone_number.strip('+')).exists()
+
         valid = bool(team_name) and bool(phone_number) and not already_exists and bool(
             leader_phone) and leader_phone != '+91'
         if not valid:
+            logger.error(f"Invalid row: {row}" + "\n-----" * 2+f"{already_exists = } {valid = } {team_name = } {phone_number = } {leader_phone = }")
             return True
         return super().skip_row(instance, original, row, import_validation_errors)
 
@@ -178,7 +178,7 @@ class TeamResource(resources.ModelResource):
 @admin.register(TeamMember)
 class TeamMemberAdmin(ImportExportModelAdmin):
     resource_class = TeamMemberResource
-    list_display = ('name', 'email', 'phone_number', 'team', 'team_leader', 'starred_conductor')
+    list_display = ('name', 'email', 'phone_number', 'team', 'team_leader','leader_phone_number', 'starred_conductor')
     search_fields = ('name', 'email', 'phone_number', 'team__name')
     list_filter = ('team', 'team_leader', 'starred_conductor', 'referral')
 

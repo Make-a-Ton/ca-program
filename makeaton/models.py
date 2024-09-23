@@ -60,6 +60,7 @@ class TeamMember(Model):
                             choices=(('Veg', 'Veg'), ('Non-Veg', 'Non-Veg')))  # Dietary preference
     starred_conductor = models.BooleanField(default=False)  # Whether the participant has started the Conductor Track
     last_start_checked = models.DateTimeField(blank=True, null=True)  # Last time the start was checked
+    leader_phone_number = models.CharField(max_length=15, blank=True, null=True)  # Cleaned phone number of the team leader
 
     def __str__(self):
         return self.name
@@ -103,6 +104,7 @@ class MyTeamMember(TeamMember):
         verbose_name = "My Team Member"
         verbose_name_plural = "My Team Members"
         proxy = True
+
 
 class Issue(Model):
     title = models.CharField(max_length=255)
