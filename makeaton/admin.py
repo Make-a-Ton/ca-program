@@ -407,6 +407,7 @@ class TeamLeaderAdmin(admin.ModelAdmin):
 class IssueAdmin(admin.ModelAdmin):
     exclude = common_exclude
     list_display = ('title', 'status', 'response','team')
+    list_filter = ('status',)
     def get_readonly_fields(self, request, obj=None):
         return ('raised_by','title','description','team')
     def has_add_permission(self, request):
@@ -417,6 +418,7 @@ class IssueAdmin(admin.ModelAdmin):
 class RaiseAnIssueAdmin(admin.ModelAdmin):
     exclude = common_exclude + ['team']
     list_display = ('title', 'status',"response",)
+    list_filter = ('status',)
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         if not request.user.is_superuser:
