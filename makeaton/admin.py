@@ -254,6 +254,9 @@ class TeamAdmin(ImportExportModelAdmin):
                 for member in all_members:
                     member.team = team
                     member.save()
+                for issues in Issue.objects.filter(team__id__in=dup_teams.values_list('id', flat=True)):
+                    issues.team = team
+                    issues.save()
                 try:
                     dup_teams.delete()
                 except Exception as e:
