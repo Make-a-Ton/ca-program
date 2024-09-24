@@ -254,7 +254,11 @@ class TeamAdmin(ImportExportModelAdmin):
                 for member in all_members:
                     member.team = team
                     member.save()
-                dup_teams.delete()
+                try:
+                    dup_teams.delete()
+                except Exception as e:
+                    count_fail += 1
+                    logger.error(f"Error in deleting duplicate teams({[t.name for t in dup_teams]}): {e}")
             # all_members = TeamMember.objects.filter(team__leader_phone__contains=team.leader_phone.strip('+'))
             # for member in all_members:
             #     member.team = team
