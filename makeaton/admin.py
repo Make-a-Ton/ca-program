@@ -252,7 +252,7 @@ class TeamAdmin(ImportExportModelAdmin):
                 dup_teams = Team.objects.filter(leader_phone__contains=team_leader.first().mobile_number.strip('+')).exclude(id=team.id)
                 all_members = TeamMember.objects.filter(team__id__in=dup_teams.values_list('id', flat=True))
                 conductor_track = all([member.starred_conductor for member in all_members])
-                if not team.conductor_track and conductor_track:
+                if conductor_track:
                     # print(f"Conductor Track: {team.name}",team.conductor_track, conductor_track)
                     team.conductor_track = True
                     team.save()
