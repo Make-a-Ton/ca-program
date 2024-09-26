@@ -229,7 +229,7 @@ class TeamAdmin(ImportExportModelAdmin):
     list_display = ('name', 'conductor_track', 'leader_phone', 'member_count')
     search_fields = ('name', 'leader_phone')
     inlines = [TeamMemberInline]
-    list_filter = (HasLeaderFilter,)  # Adding the custom filter here
+    list_filter = (HasLeaderFilter, 'conductor_track')  # Adding the custom filter here
 
     actions = ['refresh_leaders']
 
