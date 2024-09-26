@@ -243,6 +243,11 @@ class TeamAdmin(ImportExportModelAdmin):
         count_fail = 0
         queryset = queryset.order_by('id')
         for team in queryset:
+            conductor_track = all([member.starred_conductor for member in team.members])
+            if conductor_track:
+                # print(f"Conductor Track: {team.name}",team.conductor_track, conductor_track)
+                team.conductor_track = True
+                team.save()
             team_leader = User.objects.filter(mobile_number__contains=team.leader_phone.strip('+'))
             if team_leader.exists():
                 count_success += 1
@@ -251,11 +256,6 @@ class TeamAdmin(ImportExportModelAdmin):
             if team_leader.exists() and Team.objects.filter(leader_phone__contains=team_leader.first().mobile_number.strip('+')).count() > 1:
                 dup_teams = Team.objects.filter(leader_phone__contains=team_leader.first().mobile_number.strip('+')).exclude(id=team.id)
                 all_members = TeamMember.objects.filter(team__id__in=dup_teams.values_list('id', flat=True))
-                conductor_track = all([member.starred_conductor for member in all_members])
-                if conductor_track:
-                    # print(f"Conductor Track: {team.name}",team.conductor_track, conductor_track)
-                    team.conductor_track = True
-                    team.save()
                 for member in all_members:
                     member.team = team
                     member.save()
