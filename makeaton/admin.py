@@ -243,7 +243,7 @@ class TeamAdmin(ImportExportModelAdmin):
         count_fail = 0
         queryset = queryset.order_by('id')
         for team in queryset:
-            conductor_track = all([member.starred_conductor for member in team.members])
+            conductor_track = all([member.starred_conductor for member in team.members.all()])
             if conductor_track:
                 # print(f"Conductor Track: {team.name}",team.conductor_track, conductor_track)
                 team.conductor_track = True
