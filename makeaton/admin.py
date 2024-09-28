@@ -339,17 +339,18 @@ class LeaderboardAdmin(admin.ModelAdmin):
 @admin.register(MyTeam)
 class MyTeamAdmin(admin.ModelAdmin):
     list_display = (
-        'name', 'conductor_track', 'leader_phone'
+        'name', 'conductor_track', 'leader_phone','track'
     )
     exclude = common_exclude
 
     inlines = [MyTeamMemberInline]
+    readonly_fields = ['leader', 'leader_phone', 'name', ]
 
     def get_queryset(self, request):
         return super().get_queryset(request).filter(leader=request.user)
 
-    def has_change_permission(self, request, obj=None):
-        return False
+    #def has_change_permission(self, request, obj=None):
+     #   return False
 
     def has_delete_permission(self, request, obj=None):
         return False
