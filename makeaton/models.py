@@ -15,6 +15,9 @@ class Team(Model):
     leader_phone = models.CharField(max_length=15)  # Cleaned phone number of the team leader
     leader = models.ForeignKey('authentication.User', on_delete=models.RESTRICT,
                                related_name='team_leader', blank=True, null=True)  # Team leader
+    ## Hardware or Software default is Software
+    track = models.CharField(max_length=255, default='Software', choices=(('Software', 'Software'), ('Hardware', 'Hardware')))
+                           
 
     def __str__(self):
         return self.name

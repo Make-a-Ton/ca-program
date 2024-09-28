@@ -339,7 +339,7 @@ class LeaderboardAdmin(admin.ModelAdmin):
 @admin.register(MyTeam)
 class MyTeamAdmin(admin.ModelAdmin):
     list_display = (
-        'name', 'conductor_track', 'leader_phone'
+        'name', 'conductor_track', 'leader_phone','track'
     )
     exclude = common_exclude
 
