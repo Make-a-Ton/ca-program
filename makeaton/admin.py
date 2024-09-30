@@ -160,7 +160,8 @@ class TeamMemberResource(resources.ModelResource):
         valid = bool(team_name) and bool(phone_number) and not already_exists and bool(
             leader_phone) and leader_phone != '+91'
         if not valid:
-            logger.error(f"Invalid row: {row}" + "\n-----" * 2+f"{already_exists = } {valid = } {team_name = } {phone_number = } {leader_phone = }")
+            logger.error(
+                f"Invalid row: {row}" + "\n-----" * 2 + f"{already_exists = } {valid = } {team_name = } {phone_number = } {leader_phone = }")
             return True
         return super().skip_row(instance, original, row, import_validation_errors)
 
@@ -178,7 +179,7 @@ class TeamResource(resources.ModelResource):
 @admin.register(TeamMember)
 class TeamMemberAdmin(ImportExportModelAdmin):
     resource_class = TeamMemberResource
-    list_display = ('name', 'email', 'phone_number', 'team', 'team_leader','leader_phone_number', 'starred_conductor')
+    list_display = ('name', 'email', 'phone_number', 'team', 'team_leader', 'leader_phone_number', 'starred_conductor')
     search_fields = ('name', 'email', 'phone_number', 'team__name')
     list_filter = ('team', 'team_leader', 'starred_conductor', 'referral')
 
@@ -253,8 +254,10 @@ class TeamAdmin(ImportExportModelAdmin):
                 count_success += 1
                 team.leader = team_leader.first()
                 team.save()
-            if team_leader.exists() and Team.objects.filter(leader_phone__contains=team_leader.first().mobile_number.strip('+')).count() > 1:
-                dup_teams = Team.objects.filter(leader_phone__contains=team_leader.first().mobile_number.strip('+')).exclude(id=team.id)
+            if team_leader.exists() and Team.objects.filter(
+                    leader_phone__contains=team_leader.first().mobile_number.strip('+')).count() > 1:
+                dup_teams = Team.objects.filter(
+                    leader_phone__contains=team_leader.first().mobile_number.strip('+')).exclude(id=team.id)
                 all_members = TeamMember.objects.filter(team__id__in=dup_teams.values_list('id', flat=True))
                 for member in all_members:
                     member.team = team
@@ -272,8 +275,7 @@ class TeamAdmin(ImportExportModelAdmin):
             #     member.team = team
             #     member.save()
             #     print(member.name)
-            
-                
+
         self.message_user(request, f"Successfully updated {count_success} teams. Failed to update {count_fail} teams.")
 
     def get_queryset(self, request):
@@ -339,18 +341,18 @@ class LeaderboardAdmin(admin.ModelAdmin):
 @admin.register(MyTeam)
 class MyTeamAdmin(admin.ModelAdmin):
     list_display = (
-        'name', 'conductor_track', 'leader_phone','track'
+        'name', 'conductor_track', 'leader_phone', 'track'
     )
     exclude = common_exclude
 
     inlines = [MyTeamMemberInline]
-    readonly_fields = ['leader', 'leader_phone', 'name','conductor_track' ]
+    readonly_fields = ['leader', 'leader_phone', 'name', 'conductor_track']
 
     def get_queryset(self, request):
         return super().get_queryset(request).filter(leader=request.user)
 
-    #def has_change_permission(self, request, obj=None):
-     #   return False
+    # def has_change_permission(self, request, obj=None):
+    #   return False
 
     def has_delete_permission(self, request, obj=None):
         return False
@@ -409,22 +411,28 @@ class TeamLeaderAdmin(admin.ModelAdmin):
     def has_add_permission(self, request):
         return False
 
+
 @admin.register(Issue)
 class IssueAdmin(admin.ModelAdmin):
     exclude = common_exclude
-    list_display = ('title', 'status', 'response','team')
-    list_filter = ('status',)
+    list_display = ('title', 'status', 'response', 'team')
+    list_filter = ('status', 'team',)
+    search_fields = (
+    'title', 'description', 'raised_by__full_name', 'team__name', 'raised_by__email', 'raised_by__mobile_number')
+
     def get_readonly_fields(self, request, obj=None):
-        return ('raised_by','title','description','team')
+        return ('raised_by', 'title', 'description', 'team')
+
     def has_add_permission(self, request):
         return False
-    
+
 
 @admin.register(RaiseAnIssue)
 class RaiseAnIssueAdmin(admin.ModelAdmin):
     exclude = common_exclude + ['team']
-    list_display = ('title', 'status',"response",)
+    list_display = ('title', 'status', "response",)
     list_filter = ('status',)
+
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         if not request.user.is_superuser:
