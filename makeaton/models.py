@@ -11,13 +11,17 @@ from ca.models import CampusAmbassador
 class Team(Model):
     name = models.CharField(max_length=255)
     conductor_track = models.BooleanField(default=False)  # Whether the team is competing in the Conductor Track
-    why_should_select_you = models.TextField(  default="Describe your team, whether you are beginners or pros aiming to win big! Don't use GPT for this")  # Details about projects built or planned
+    why_should_select_you = models.TextField(
+        default="Describe your team, whether you are beginners or pros aiming to win big! Don't use GPT for this")  # Details about projects built or planned
     leader_phone = models.CharField(max_length=15)  # Cleaned phone number of the team leader
     leader = models.ForeignKey('authentication.User', on_delete=models.RESTRICT,
                                related_name='team_leader', blank=True, null=True)  # Team leader
     ## Hardware or Software default is Software
-    track = models.CharField(max_length=255, default='Software', choices=(('Software', 'Software'), ('Hardware', 'Hardware')))
-                           
+    track = models.CharField(max_length=255, default='Software',
+                             choices=(('Software', 'Software'), ('Hardware', 'Hardware')))
+    level = models.CharField(max_length=255, blank=True, null=True, choices=(
+        ('beginner', 'beginner'), ('intermediate', 'intermediate'), ('advanced', 'advanced')))  # Level of expertise
+
 
     def __str__(self):
         return self.name
@@ -63,7 +67,10 @@ class TeamMember(Model):
                             choices=(('Veg', 'Veg'), ('Non-Veg', 'Non-Veg')))  # Dietary preference
     starred_conductor = models.BooleanField(default=False)  # Whether the participant has started the Conductor Track
     last_start_checked = models.DateTimeField(blank=True, null=True)  # Last time the start was checked
-    leader_phone_number = models.CharField(max_length=15, blank=True, null=True)  # Cleaned phone number of the team leader
+    leader_phone_number = models.CharField(max_length=15, blank=True,
+                                           null=True)  # Cleaned phone number of the team leader
+    level = models.CharField(max_length=255, blank=True, null=True, choices=(
+        ('beginner', 'beginner'), ('intermediate', 'intermediate'), ('advanced', 'advanced')))  # Level of expertise
 
     def __str__(self):
         return self.name
@@ -111,14 +118,17 @@ class MyTeamMember(TeamMember):
 
 class Issue(Model):
     title = models.CharField(max_length=255)
-    description = models.TextField(default='Explain the issue in detail below\n\n\n\n\nMention the suggestions to be implemented below')  
-    status = models.CharField(max_length=50, default='Pending', choices=(('Pending', 'Pending'), ('Resolved', 'Resolved'), ('Rejected', 'Rejected')))
+    description = models.TextField(
+        default='Explain the issue in detail below\n\n\n\n\nMention the suggestions to be implemented below')
+    status = models.CharField(max_length=50, default='Pending',
+                              choices=(('Pending', 'Pending'), ('Resolved', 'Resolved'), ('Rejected', 'Rejected')))
     response = models.TextField(blank=True, null=True)
     raised_by = models.ForeignKey(User, on_delete=models.RESTRICT, related_name='issues')
     team = models.ForeignKey(Team, on_delete=models.RESTRICT, related_name='issues', blank=True, null=True)
 
     def __str__(self):
         return self.title
+
 
 class RaiseAnIssue(Issue):
     class Meta:

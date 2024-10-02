@@ -179,9 +179,9 @@ class TeamResource(resources.ModelResource):
 @admin.register(TeamMember)
 class TeamMemberAdmin(ImportExportModelAdmin):
     resource_class = TeamMemberResource
-    list_display = ('name', 'email', 'phone_number', 'team', 'team_leader', 'leader_phone_number', 'starred_conductor')
+    list_display = ('name', 'email', 'phone_number', 'team', 'team_leader', 'leader_phone_number', 'starred_conductor','level')
     search_fields = ('name', 'email', 'phone_number', 'team__name')
-    list_filter = ('team', 'team_leader', 'starred_conductor', 'referral')
+    list_filter = ('team', 'team_leader', 'starred_conductor', 'referral','level')
 
     actions = ['check_stars']
 
