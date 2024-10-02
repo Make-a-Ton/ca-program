@@ -21,7 +21,7 @@ class Team(Model):
                              choices=(('Software', 'Software'), ('Hardware', 'Hardware')))
     level = models.CharField(max_length=255, blank=True, null=True, choices=(
         ('beginner', 'beginner'), ('intermediate', 'intermediate'), ('advanced', 'advanced')))  # Level of expertise
-
+    llm_review = models.TextField(blank=True, null=True)  # Review by the LLM
 
     def __str__(self):
         return self.name
