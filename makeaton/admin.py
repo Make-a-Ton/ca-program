@@ -344,7 +344,7 @@ class MyTeamAdmin(admin.ModelAdmin):
     list_display = (
         'name', 'conductor_track', 'leader_phone', 'track'
     )
-    exclude = common_exclude +['llm_review', 'llm_score']
+    exclude = common_exclude +['llm_review', 'llm_score','level']
 
     inlines = [MyTeamMemberInline]
     readonly_fields = ['leader', 'leader_phone', 'name', 'conductor_track',]
