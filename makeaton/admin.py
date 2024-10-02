@@ -7,7 +7,8 @@ from django.contrib import admin
 
 from base.utils import clean_mobile_number
 from ca.models import CampusAmbassador
-from .models import Team, TeamMember, Participants, Leaderboard, MyTeam, TeamLeader, MyTeamMember, Issue, RaiseAnIssue
+from .models import Team, TeamMember, Participants, Leaderboard, MyTeam, TeamLeader, MyTeamMember, Issue, RaiseAnIssue, \
+    TeamLlmReview
 from authentication.models import User
 import logging
 
@@ -343,10 +344,10 @@ class MyTeamAdmin(admin.ModelAdmin):
     list_display = (
         'name', 'conductor_track', 'leader_phone', 'track'
     )
-    exclude = common_exclude
+    exclude = common_exclude +['llm_review', 'llm_score']
 
     inlines = [MyTeamMemberInline]
-    readonly_fields = ['leader', 'leader_phone', 'name', 'conductor_track']
+    readonly_fields = ['leader', 'leader_phone', 'name', 'conductor_track',]
 
     def get_queryset(self, request):
         return super().get_queryset(request).filter(leader=request.user)
@@ -364,7 +365,7 @@ class MyTeamAdmin(admin.ModelAdmin):
 @admin.register(MyTeamMember)
 class MyTeamMemberAdmin(admin.ModelAdmin):
     list_display = ('name', 'email', 'phone_number', 'starred_conductor')
-    exclude = common_exclude + ['approval_status']
+    exclude = common_exclude + ['approval_status', 'level']
 
     def get_queryset(self, request):
         return super().get_queryset(request).filter(team__leader=request.user)
@@ -458,3 +459,42 @@ class RaiseAnIssueAdmin(admin.ModelAdmin):
         if not request.user.is_superuser:
             fields = [f for f in fields if f != 'raised_by']
         return fields
+
+class TeamLLMResource(resources.ModelResource):
+    leader_phone = fields.Field(attribute='leader_phone', column_name='Team Leader Phone Number')
+    level = fields.Field(attribute='level', column_name='Classification')
+    team_score = fields.Field(attribute='llm_score', column_name='Score')
+    llm_review = fields.Field(attribute='llm_review', column_name='Reason')
+
+    class Meta:
+        model = Team
+        fields = ('leader_phone', 'level', 'llm_score', 'llm_review')
+        export_order = ('leader_phone', 'level', 'llm_score', 'llm_review')
+        import_id_fields = ('leader_phone',)  # This ensures that the import identifies records by leader_phone
+        skip_unchanged = True  # Skips records that haven’t changed
+        report_skipped = True  # Reports any records that were skipped due to no changes
+        update_or_create = False  # Only update existing records, do not create new ones
+
+    def get_instance(self, instance_loader, row):
+        """
+        Overrides the default get_instance method to query using icontains for leader_phone
+        """
+        # Retrieve the value from the CSV row for 'Team Leader Phone Number'
+        leader_phone = row.get('Team Leader Phone Number')
+
+        # Use icontains to match team by leader_phone (partial match, case-insensitive)
+        return Team.objects.filter(leader_phone__icontains=leader_phone).first()
+
+    def before_import_row(self, row, **kwargs):
+            """
+            This method is called before each row is imported.
+            You can add custom validation logic here if needed.
+            """
+            pass
+
+
+@admin.register(TeamLlmReview)
+class TeamLlmReviewAdmin(ImportExportModelAdmin):
+    resource_class = TeamLLMResource
+    list_display = ('name', 'leader_phone', 'track', 'level', 'llm_score')
+    search_fields = ('name', 'leader_phone')
