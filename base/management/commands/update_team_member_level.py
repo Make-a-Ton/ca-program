@@ -1,6 +1,6 @@
 import csv
 from django.core.management.base import BaseCommand
-from makeaton.models import Team
+from makeaton.models import TeamMember
 
 
 class Command(BaseCommand):
@@ -18,26 +18,22 @@ class Command(BaseCommand):
                 reader = csv.DictReader(csvfile)
 
                 for row in reader:
-                    phone = row['Team Leader Phone Number']
+                    email = row['email']
+                    print(email)
                     classification = row['Classification']
-                    score = row['Score']
-                    reason = row['Reason']
 
                     # Fetch the team member by email
                     try:
-                        team = Team.objects.get(leader_phone__contains=phone)
-                        team.level = classification  # Update the level of expertise
-                        team.llm_score = score
-                        team.llm_review = reason
-                        team.save()
-                        self.stdout.write(self.style.SUCCESS(
-                            f"Email: {phone}, Classification: {classification}, Score: {score}, Reason: {reason}"))
+                        team_member = TeamMember.objects.get(email=email)
+                        team_member.level = classification  # Update the level of expertise
+                        team_member.save()
 
+                        self.stdout.write(self.style.SUCCESS(f"Updated {team_member.name}'s level to {classification}"))
 
-                    except Team.DoesNotExist:
-                        self.stdout.write(self.style.ERROR(f"Team member with phone {phone} not found"))
+                    except TeamMember.DoesNotExist:
+                        self.stdout.write(self.style.ERROR(f"Team member with email {email} not found"))
                     except Exception as e:
-                        self.stdout.write(self.style.ERROR(f"An error occurred: {phone} {str(e)}"))
+                        self.stdout.write(self.style.ERROR(f"An error occurred: {email} {str(e)}"))
 
         except FileNotFoundError:
             self.stdout.write(self.style.ERROR(f"File {csv_file_path} not found"))
