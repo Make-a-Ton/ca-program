@@ -32,6 +32,8 @@ class Command(BaseCommand):
 
                     except TeamMember.DoesNotExist:
                         self.stdout.write(self.style.ERROR(f"Team member with email {email} not found"))
+                    except Exception as e:
+                        self.stdout.write(self.style.ERROR(f"An error occurred: {email} {str(e)}"))
 
         except FileNotFoundError:
             self.stdout.write(self.style.ERROR(f"File {csv_file_path} not found"))
