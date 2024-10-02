@@ -22,6 +22,7 @@ class Team(Model):
     level = models.CharField(max_length=255, blank=True, null=True, choices=(
         ('beginner', 'beginner'), ('intermediate', 'intermediate'), ('advanced', 'advanced')))  # Level of expertise
     llm_review = models.TextField(blank=True, null=True)  # Review by the LLM
+    llm_score = models.FloatField(default=0)  # Score given by the LLM
 
     def __str__(self):
         return self.name
@@ -126,6 +127,7 @@ class Issue(Model):
     raised_by = models.ForeignKey(User, on_delete=models.RESTRICT, related_name='issues')
     team = models.ForeignKey(Team, on_delete=models.RESTRICT, related_name='issues', blank=True, null=True)
 
+
     def __str__(self):
         return self.title
 
@@ -134,4 +136,11 @@ class RaiseAnIssue(Issue):
     class Meta:
         verbose_name = "Issue Raised"
         verbose_name_plural = "Issues Raised"
+        proxy = True
+
+
+class TeamLlmReview(Team):
+    class Meta:
+        verbose_name = "Team LLM Review"
+        verbose_name_plural = "Team LLM Reviews"
         proxy = True
