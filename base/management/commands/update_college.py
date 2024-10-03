@@ -12,7 +12,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         csv_file_path = kwargs['csv_file']
-
+        count = 0
         try:
             with open(csv_file_path, newline='', encoding='utf-8') as csvfile:
                 reader = csv.DictReader(csvfile)
@@ -20,6 +20,7 @@ class Command(BaseCommand):
                 for row in reader:
                     try:
                         email = row['email']
+                        count += 1
                         TeamMember.objects.filter(email=email).update(college_name=row['College Names'])
                         self.stdout.write(self.style.SUCCESS(f"Updated {email}'s level to {row['College Names']}"))
                     except Exception as e:
@@ -29,4 +30,6 @@ class Command(BaseCommand):
             self.stdout.write(self.style.ERROR(f"File {csv_file_path} not found"))
         except Exception as e:
             self.stdout.write(self.style.ERROR(f"An error occurred: {str(e)}"))
+
+        self.stdout.write(self.style.SUCCESS(f"Updated {count} records"))
 
