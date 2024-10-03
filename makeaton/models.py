@@ -127,7 +127,6 @@ class Issue(Model):
     raised_by = models.ForeignKey(User, on_delete=models.RESTRICT, related_name='issues')
     team = models.ForeignKey(Team, on_delete=models.RESTRICT, related_name='issues', blank=True, null=True)
 
-
     def __str__(self):
         return self.title
 
@@ -143,4 +142,11 @@ class TeamLlmReview(Team):
     class Meta:
         verbose_name = "Team LLM Review"
         verbose_name_plural = "Team LLM Reviews"
+        proxy = True
+
+
+class TeamRsvp(Team):
+    class Meta:
+        verbose_name = "Team RSVP"
+        verbose_name_plural = "Team RSVPs"
         proxy = True

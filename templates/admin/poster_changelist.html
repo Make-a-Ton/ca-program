@@ -1,0 +1,116 @@
+{% extends "admin/change_list.html" %}
+
+{% block content %}
+    <style>
+        .poster-card {
+            display: inline-block;
+            width: 250px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            position: relative;
+            text-align: center;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+            background-color: #F6F5F5; /* Light background */
+        }
+
+        .poster-card img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+
+        .poster-card .card-body {
+            margin-top: 5px;
+        }
+
+        .poster-card .card-body h4 {
+            margin: 5px 0;
+            color: #204289; /* Primary text color */
+        }
+
+        .poster-card .card-body p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: #555; /* Neutral text color */
+        }
+
+        /* Button Styling */
+        .poster-card .btn {
+            margin-top: 5px;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            color: white;
+            transition: background-color 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .poster-card .btn i {
+            margin-right: 5px; /* Spacing between icon and text */
+        }
+
+        .poster-card .edit-btn {
+            background-color: #204289; /* Dark blue */
+        }
+
+        .poster-card .edit-btn:hover {
+            background-color: #10214A; /* Darker blue */
+        }
+
+        .poster-card .download-btn {
+            background-color: #EAAF20; /* Yellow-gold */
+        }
+
+        .poster-card .download-btn:hover {
+            background-color: #C08D1A; /* Darker yellow-gold */
+        }
+
+        .poster-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+    </style>
+
+    <div class="poster-container">
+        {% for obj in cl.result_list %}
+            <div class="poster-card">
+                <!-- Poster Image -->
+                {% if obj.poster %}
+                    <img src="{{ obj.poster.url }}" alt="{{ obj.member.name }}">
+                {% else %}
+                    <p>No poster available</p>
+                {% endif %}
+
+                <!-- Card Body with Member and Team details -->
+                <div class="card-body">
+                    <h4>{{ obj.member.name }}</h4>
+                    <p>Team: {{ obj.member.team.name }}</p>
+
+                    <!-- Edit Button with Icon -->
+                    <a href="{{ obj.get_admin_url }}" class="btn edit-btn">
+                        <i class="fas fa-edit"></i>Edit
+                    </a>
+
+                    <!-- Download Button with Icon -->
+                    {% if obj.poster %}
+                        <a href="{{ obj.poster.url }}" download="{{ obj.member.name }}_poster.jpg" class="btn download-btn">
+                            <i class="fas fa-download"></i>Download
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Include FontAwesome for Icons -->
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+
+{% endblock %}

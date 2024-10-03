@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
     # 'django.contrib.admindocs',
 ]
 
@@ -82,6 +83,8 @@ CUSTOM_APPS = [
     'authentication',
     'ca',
     'makeaton',
+    'updates',
+    'rsvp',
 ]
 
 INSTALLED_APPS += CUSTOM_APPS + THIRD_PARTY_APPS
