@@ -84,7 +84,6 @@ CUSTOM_APPS = [
     'ca',
     'makeaton',
     'updates',
-    'rsvp',
 ]
 
 INSTALLED_APPS += CUSTOM_APPS + THIRD_PARTY_APPS
