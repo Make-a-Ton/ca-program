@@ -14,7 +14,7 @@ import logging
 
 import threading
 
-from .utils import bulk_started_status_check
+from .utils import bulk_started_status_check, send_rsvp_email
 
 logger = logging.getLogger('home')
 
@@ -234,7 +234,7 @@ class TeamAdmin(ImportExportModelAdmin):
     inlines = [TeamMemberInline]
     list_filter = (HasLeaderFilter, 'conductor_track', 'approved',)  # Adding the custom filter here
 
-    actions = ['approve_teams', 'disapprove_teams']
+    actions = ['approve_teams', 'disapprove_teams', 'rsvp_mail','send_rsvp_email']
 
     def member_count(self, obj):
         return obj.members.count()
@@ -302,6 +302,10 @@ class TeamAdmin(ImportExportModelAdmin):
             for member in team.members.all():
                 member.approval_status = 'pending_approval'
                 member.save()
+
+    def send_rsvp_email(self, request, queryset):
+        queryset = queryset.filter(approved=True)
+        threading.Thread(target=send_rsvp_email, args=(queryset,)).start()
 
     def get_queryset(self, request):
         return super().get_queryset(request).annotate(

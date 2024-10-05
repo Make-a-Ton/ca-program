@@ -109,6 +109,8 @@ class BaseUser(AbstractBaseUser, PermissionsMixin):
                     self.email], connection=connection, **kwargs).send()
         # send_mail(subject, message, from_email, [self.email], **kwargs)
 
+    def __str__(self):
+        return self.full_name
 
 class User(BaseUser):
     """

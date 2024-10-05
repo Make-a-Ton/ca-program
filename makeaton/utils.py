@@ -31,7 +31,7 @@ def update_leader_phone_numbers(dataset):
     print("Waking up")
     for data in dataset:
         try:
-            phone,leader_phone = clean_mobile_number(data[3]),clean_mobile_number(data[21])
+            phone, leader_phone = clean_mobile_number(data[3]), clean_mobile_number(data[21])
             team_member = TeamMember.objects.get(phone_number=phone)
             if not team_member.leader_phone_number:
                 team_member.leader_phone_number = leader_phone
@@ -149,3 +149,78 @@ def bulk_started_status_check(queryset):
             logger.error(
                 f"Error updating started status for {team_member}: {e},{user_name}, {team_member.github_profile}")
     logger.info(f"Checked {count} participants completed in {(timezone.now() - start_time).seconds // 60} minutes")
+
+
+import random
+import smtplib
+import ssl
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from time import sleep
+import certifi
+import logging
+
+from django.contrib.auth.models import Group
+from django.template.loader import render_to_string
+from django.utils.crypto import get_random_string
+from django.utils.html import strip_tags
+
+logger = logging.getLogger('home')
+from config import settings
+
+
+def send_email(receiver_email, user, team_name, conductor):
+    sender_email = settings.EMAIL_HOST_USER
+    password = settings.EMAIL_HOST_PASSWORD
+    # receiver_email = "contact.makeaton@gmail.com"
+
+    message = MIMEMultipart("alternative")
+    message["Subject"] = "You are shortlisted for Make-A-Ton 7.0 powered by Eduport."
+    message["From"] = sender_email
+    message["To"] = receiver_email
+    # message["To"] = "sunithvs2002thvs2002@gmail.com"
+
+    # Render the email content using the HTML template
+    email_content = render_to_string('emails/rsvp.html', {
+        'full_name': user.full_name,
+        'conductor': conductor,
+        'team_name': team_name,
+
+    })
+
+    # Strip HTML tags for the plain text alternative
+    plain_message = strip_tags(email_content)
+
+    part1 = MIMEText(plain_message, "plain")
+    part2 = MIMEText(email_content, "html")
+
+    # Add HTML/plain-text parts to MIMEMultipart message
+    # The email client will try to render the last part first
+    message.attach(part1)
+    message.attach(part2)
+
+    # Create secure connection with server and send email
+    context = ssl.create_default_context(cafile=certifi.where())
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
+        server.login(sender_email, password)
+        server.sendmail(
+            sender_email, receiver_email, message.as_string()
+        )
+
+
+def send_rsvp_email(queryset):
+    i = 0
+    for team in queryset:
+        # check user exists in a group
+        try:
+            i += 1
+            if i % 50 == 0:
+                sleep(random.randint(200, 210))
+            else:
+                sleep(random.randint(4, 10))
+            send_email(team.leader.email, team.leader, team.name, team.conductor_track)
+            logger.info(f"Email sent to {team.leader.email}")
+            i += 1
+        except Exception as e:
+            logger.error(f"Error sending email to {team.leader.email}: {e}")
+            continue
