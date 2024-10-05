@@ -374,7 +374,7 @@ class MyTeamAdmin(admin.ModelAdmin):
     exclude = common_exclude + ['llm_review', 'llm_score', 'level']
 
     inlines = [MyTeamMemberInline]
-    readonly_fields = ['leader', 'leader_phone', 'name', 'conductor_track', ]
+    readonly_fields = ['leader', 'leader_phone', 'name', 'conductor_track','why_should_select_you', 'approved', 'track']
 
     def get_queryset(self, request):
         return super().get_queryset(request).filter(leader=request.user)
