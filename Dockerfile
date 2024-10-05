@@ -13,7 +13,7 @@ COPY requirements.txt /code/
 COPY . /code/
 
 # Install GDAL dependencies
-RUN apt-get update
+RUN apt-get update && apt-get install -y binutils libproj-dev gdal-bin libgl1
 
 RUN apt-get update && apt-get install -y \
     libgl1-mesa-glx \
