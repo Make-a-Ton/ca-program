@@ -1,5 +1,5 @@
 from django.db import models
-
+from django.core.exceptions import ValidationError
 from authentication.models import User
 from base.models import Model
 from ca.models import CampusAmbassador
@@ -23,17 +23,31 @@ class Team(Model):
         ('beginner', 'beginner'), ('intermediate', 'intermediate'), ('advanced', 'advanced')))  # Level of expertise
     llm_review = models.TextField(blank=True, null=True)  # Review by the LLM
     llm_score = models.FloatField(default=0)  # Score given by the LLM
+    approved = models.BooleanField(default=False, choices=((True, 'Yes'), (False, 'Pending')))
+    rsvp = models.BooleanField(default=False, choices=((True, 'Yes'), (False, 'No')))  # Whether the team has RSVPed
+    all_members_joined_whatsapp = models.BooleanField(
+        default=False)  # Whether all members have joined the WhatsApp group
 
     def __str__(self):
         return self.name
 
-    @property
-    def members(self):
-        return self.teammember_set.all()
+    # @property
+    # def members(self):
+    #     return self.teammember_set.all()
 
     @property
     def member_count(self):
         return self.members.count()
+
+    def clean(self):
+        if self.rsvp:
+            if not self.approved:
+                raise ValidationError("The team must be approved before RSVPing")
+            pending_im_participating = self.members.filter(imparticipating__isnull=True)
+            if pending_im_participating.exists():
+                raise ValidationError("All team members must generate their posters before RSVPing")
+            if not self.all_members_joined_whatsapp:
+                raise ValidationError("All team members must join the WhatsApp group before RSVPing")
 
 
 class TeamMember(Model):

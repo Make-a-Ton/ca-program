@@ -38,7 +38,7 @@ class PosterTemplate:
         # Use the previous function to crop the head to a circle
         # We will assume detect_head_and_crop_circle exists and is working
         cropped_head_resized = detect_head_and_crop_circle(
-            head_image_path, diameter_fraction=0.5, target_size=self.circle_diameter
+            head_image_path, diameter_fraction=1, target_size=self.circle_diameter
         )
 
         # Convert OpenCV image (BGR) to PIL image (RGBA)
@@ -61,9 +61,9 @@ class PosterTemplate:
         result_image.paste(
             cropped_head_pil, self.center_coordinates, mask=cropped_head_pil
         )
-
+        # resize the image to its 1/4
+        result_image = result_image.resize((result_image.width // 2, result_image.height // 2))
         return result_image
-
 
 # if __name__ == "__main__":
 #     # Example usage

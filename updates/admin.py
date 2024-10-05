@@ -26,5 +26,11 @@ class ImParticipatingAdmin(admin.ModelAdmin):
             kwargs["queryset"] = TeamMember.objects.filter(team__leader=request.user, imparticipating__isnull=True)
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+        return qs.filter(member__team__leader=request.user)
+
 
 admin.site.register(ImParticipating, ImParticipatingAdmin)

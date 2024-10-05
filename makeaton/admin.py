@@ -180,9 +180,10 @@ class TeamResource(resources.ModelResource):
 @admin.register(TeamMember)
 class TeamMemberAdmin(ImportExportModelAdmin):
     resource_class = TeamMemberResource
-    list_display = ('name', 'email', 'phone_number', 'team', 'team_leader', 'leader_phone_number', 'starred_conductor','level')
+    list_display = (
+        'name', 'email', 'phone_number', 'team', 'team_leader', 'leader_phone_number', 'starred_conductor', 'level')
     search_fields = ('name', 'email', 'phone_number', 'team__name')
-    list_filter = ('team', 'team_leader', 'starred_conductor', 'referral','level')
+    list_filter = ('team', 'team_leader', 'starred_conductor', 'referral', 'level','approval_status')
 
     actions = ['check_stars']
 
@@ -228,12 +229,12 @@ class HasLeaderFilter(SimpleListFilter):
 @admin.register(Team)
 class TeamAdmin(ImportExportModelAdmin):
     resource_class = TeamResource
-    list_display = ('name', 'conductor_track', 'leader_phone', 'member_count')
+    list_display = ('name', 'conductor_track', 'leader_phone', 'member_count', 'approved')
     search_fields = ('name', 'leader_phone')
     inlines = [TeamMemberInline]
-    list_filter = (HasLeaderFilter, 'conductor_track')  # Adding the custom filter here
+    list_filter = (HasLeaderFilter, 'conductor_track', 'approved',)  # Adding the custom filter here
 
-    actions = ['refresh_leaders']
+    actions = ['approve_teams', 'disapprove_teams']
 
     def member_count(self, obj):
         return obj.members.count()
@@ -279,10 +280,36 @@ class TeamAdmin(ImportExportModelAdmin):
 
         self.message_user(request, f"Successfully updated {count_success} teams. Failed to update {count_fail} teams.")
 
+    def approve_teams(self, request, queryset):
+        approved_grp = Group.objects.get_or_create(name='Approved Team')[0]
+        for team in queryset:
+            team.approved = True
+            team.save()
+            team.leader.groups.add(approved_grp)
+            team.leader.save()
+            for member in team.members.all():
+                member.approval_status = 'approved'
+                member.save()
+
+    def disapprove_teams(self, request, queryset):
+        approved_grp = Group.objects.get_or_create(name='Approved Team')[0]
+        queryset = queryset.filter(approved=True)
+        for team in queryset:
+            team.approved = False
+            team.save()
+            team.leader.groups.remove(approved_grp)
+            team.leader.save()
+            for member in team.members.all():
+                member.approval_status = 'pending_approval'
+                member.save()
+
     def get_queryset(self, request):
         return super().get_queryset(request).annotate(
             member_no=Count('members')
         ).order_by('-member_no')
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 @admin.register(Participants)
@@ -344,10 +371,10 @@ class MyTeamAdmin(admin.ModelAdmin):
     list_display = (
         'name', 'conductor_track', 'leader_phone', 'track'
     )
-    exclude = common_exclude +['llm_review', 'llm_score','level']
+    exclude = common_exclude + ['llm_review', 'llm_score', 'level']
 
     inlines = [MyTeamMemberInline]
-    readonly_fields = ['leader', 'leader_phone', 'name', 'conductor_track',]
+    readonly_fields = ['leader', 'leader_phone', 'name', 'conductor_track', ]
 
     def get_queryset(self, request):
         return super().get_queryset(request).filter(leader=request.user)
@@ -419,7 +446,7 @@ class IssueAdmin(admin.ModelAdmin):
     list_display = ('title', 'status', 'response', 'team')
     list_filter = ('status', 'team',)
     search_fields = (
-    'title', 'description', 'raised_by__full_name', 'team__name', 'raised_by__email', 'raised_by__mobile_number')
+        'title', 'description', 'raised_by__full_name', 'team__name', 'raised_by__email', 'raised_by__mobile_number')
 
     def get_readonly_fields(self, request, obj=None):
         return ('raised_by', 'title', 'description', 'team')
@@ -460,6 +487,7 @@ class RaiseAnIssueAdmin(admin.ModelAdmin):
             fields = [f for f in fields if f != 'raised_by']
         return fields
 
+
 class TeamLLMResource(resources.ModelResource):
     leader_phone = fields.Field(attribute='leader_phone', column_name='Team Leader Phone Number')
     level = fields.Field(attribute='level', column_name='Classification')
@@ -486,11 +514,11 @@ class TeamLLMResource(resources.ModelResource):
         return Team.objects.filter(leader_phone__icontains=leader_phone).first()
 
     def before_import_row(self, row, **kwargs):
-            """
-            This method is called before each row is imported.
-            You can add custom validation logic here if needed.
-            """
-            pass
+        """
+        This method is called before each row is imported.
+        You can add custom validation logic here if needed.
+        """
+        pass
 
 
 @admin.register(TeamLlmReview)

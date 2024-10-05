@@ -15,6 +15,9 @@ from updates.services.poster import PosterTemplate
 
 def validate_profile_photo(value):
     filesize = value.size
+    # fize type only image
+    if not value.name.endswith('.jpg') and not value.name.endswith('.jpeg') and not value.name.endswith('.png'):
+        raise ValidationError("Only .jpg, .jpeg, .png files are allowed")
 
     if filesize > 1000 * 1024:
         raise ValidationError("The maximum file size that can be uploaded is 1MB")
