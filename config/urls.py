@@ -36,14 +36,15 @@ schema_view = get_schema_view(
     authentication_classes=[authentication.TokenAuthentication, ],
 
 )
+urlpatterns = []
+urlpatterns += static(settings.STATIC_URL,
+                      document_root=settings.STATIC_ROOT) + static(settings.MEDIA_URL,
+                                                                   document_root=settings.MEDIA_ROOT)
 
-urlpatterns = [
+urlpatterns += [
     path(
         "",
         admin.site.urls),
 
 ]
 
-urlpatterns += static(settings.STATIC_URL,
-                      document_root=settings.STATIC_ROOT) + static(settings.MEDIA_URL,
-                                                                   document_root=settings.MEDIA_ROOT)
