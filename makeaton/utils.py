@@ -183,7 +183,7 @@ def send_email(receiver_email, user, team_name, conductor):
     # Render the email content using the HTML template
     email_content = render_to_string('emails/rsvp.html', {
         'full_name': user.full_name,
-        'conductor': conductor,
+        'conductor': f"for conductor track" if conductor else "",
         'team_name': team_name,
 
     })
