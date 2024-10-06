@@ -232,11 +232,11 @@ class TeamAdmin(ImportExportModelAdmin):
     list_display = ('name', 'conductor_track', 'leader_phone', 'member_count', 'approved')
     search_fields = ('name', 'leader_phone')
     inlines = [TeamMemberInline]
-    list_filter = (HasLeaderFilter, 'conductor_track', 'approved',)  # Adding the custom filter here
+    list_filter = (HasLeaderFilter, 'conductor_track', 'approved','rsvp ')  # Adding the custom filter here
 
     actions = ['approve_teams', 'disapprove_teams', 'rsvp_mail','send_rsvp_email']
 
-    def member_count(self, obj):
+    def member_count(self, obj):    
         return obj.members.count()
 
     member_count.short_description = 'Member Count'
