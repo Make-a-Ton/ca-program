@@ -300,7 +300,7 @@ class TeamAdmin(ImportExportModelAdmin):
             team.leader.groups.remove(approved_grp)
             team.leader.save()
             for member in team.members.all():
-                member.approval_status = 'pending_approval'
+                member.approval_status = 'declined'
                 member.save()
 
     def send_rsvp_email(self, request, queryset):
