@@ -4,7 +4,7 @@ from django.contrib import admin
 
 
 from django.contrib import admin
-
+from django.db.models import Q
 from makeaton.models import TeamMember
 from .models import IdCard, ImParticipating, Poster
 from makeaton.admin import common_exclude
@@ -23,7 +23,7 @@ class ImParticipatingAdmin(admin.ModelAdmin):
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "member" and not request.user.is_superuser:
             # Apply your specific filter to the TeamMember queryset
-            kwargs["queryset"] = TeamMember.objects.filter(team__leader=request.user, imparticipating__isnull=True)
+            kwargs["queryset"] = TeamMember.objects.filter(Q(imparticipating__isnull=True) | Q(imparticipating__deleted=False),team__leader=request.user)
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
     def get_queryset(self, request):
