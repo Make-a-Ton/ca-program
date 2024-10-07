@@ -23,7 +23,7 @@ class Team(Model):
         ('beginner', 'beginner'), ('intermediate', 'intermediate'), ('advanced', 'advanced')))  # Level of expertise
     llm_review = models.TextField(blank=True, null=True)  # Review by the LLM
     llm_score = models.FloatField(default=0)  # Score given by the LLM
-    approved = models.BooleanField(default=False, choices=((True, 'Yes'), (False, 'Pending')))
+    approved = models.BooleanField(default=False, choices=((True, 'Yes'), (False, 'Declined')))
     rsvp = models.BooleanField(default=False, choices=((True, 'Yes'), (False, 'No')))  # Whether the team has RSVPed
     all_members_joined_whatsapp = models.BooleanField(
         default=False)  # Whether all members have joined the WhatsApp group
