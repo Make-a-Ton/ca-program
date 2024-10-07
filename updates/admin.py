@@ -20,7 +20,7 @@ class ImParticipatingAdmin(admin.ModelAdmin):
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "member" and not request.user.is_superuser:
             # Apply your specific filter to the TeamMember queryset
-            kwargs["queryset"] = TeamMember.objects.exclude(team__leader=request.user)
+            kwargs["queryset"] = TeamMember.objects.filter(team__leader=request.user)
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
     def get_queryset(self, request):
