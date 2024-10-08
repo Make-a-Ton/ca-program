@@ -1,19 +1,18 @@
+import logging
+import threading
+
+from django.contrib import admin
 from django.contrib.admin import SimpleListFilter
 from django.contrib.auth.models import Group
 from django.db.models import Count, Q
 from import_export import resources, fields
 from import_export.admin import ImportExportModelAdmin
-from django.contrib import admin
 
+from authentication.models import User
 from base.utils import clean_mobile_number
 from ca.models import CampusAmbassador
 from .models import Team, TeamMember, Participants, Leaderboard, MyTeam, TeamLeader, MyTeamMember, Issue, RaiseAnIssue, \
     TeamLlmReview
-from authentication.models import User
-import logging
-
-import threading
-
 from .utils import bulk_started_status_check, send_rsvp_email
 
 logger = logging.getLogger('home')
@@ -373,12 +372,15 @@ class LeaderboardAdmin(admin.ModelAdmin):
 @admin.register(MyTeam)
 class MyTeamAdmin(admin.ModelAdmin):
     list_display = (
-        'name', 'conductor_track', 'leader_phone', 'track'
+        'name', 'conductor_track', 'leader_phone', 'track', 'approval_status'
     )
-    exclude = common_exclude + ['llm_review', 'llm_score', 'level']
+    exclude = common_exclude + ['llm_review', 'llm_score', 'level', 'approved']
 
     inlines = [MyTeamMemberInline]
-    readonly_fields = ['leader', 'leader_phone', 'name', 'conductor_track','why_should_select_you', 'approved', 'track']
+    readonly_fields = ['leader', 'leader_phone', 'name', 'conductor_track', 'why_should_select_you', 'track']
+
+    def approval_status(self, obj):
+        return "Approved" if obj.approved else "Declined"
 
     def get_queryset(self, request):
         return super().get_queryset(request).filter(leader=request.user)
