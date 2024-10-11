@@ -86,6 +86,7 @@ class TeamMember(Model):
                                            null=True)  # Cleaned phone number of the team leader
     level = models.CharField(max_length=255, blank=True, null=True, choices=(
         ('beginner', 'beginner'), ('intermediate', 'intermediate'), ('advanced', 'advanced')))  # Level of expertise
+    id_card = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name

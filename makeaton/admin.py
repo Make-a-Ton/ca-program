@@ -182,13 +182,17 @@ class TeamMemberAdmin(ImportExportModelAdmin):
     list_display = (
         'name', 'email', 'phone_number', 'team', 'team_leader', 'leader_phone_number', 'starred_conductor', 'level')
     search_fields = ('name', 'email', 'phone_number', 'team__name')
-    list_filter = ('team', 'team_leader', 'starred_conductor', 'referral', 'level','approval_status')
+    list_filter = ('team', 'team_leader', 'starred_conductor', 'referral', 'level','approval_status','id_card')
 
-    actions = ['check_stars']
+    actions = ['check_stars','id_card']
+
 
     def check_stars(self, request, queryset):
         threading.Thread(target=bulk_started_status_check, args=(queryset,)).start()
         # bulk_started_status_check(queryset)
+
+    def id_card(self, request, queryset):
+        queryset.update(id_card=True)
 
 
 class TeamMemberInline(admin.StackedInline):
