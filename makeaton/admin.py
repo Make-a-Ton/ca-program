@@ -180,20 +180,22 @@ class TeamResource(resources.ModelResource):
 class TeamMemberAdmin(ImportExportModelAdmin):
     resource_class = TeamMemberResource
     list_display = (
-        'name', 'email', 'phone_number', 'team', 'team_leader', 'leader_phone_number', 'starred_conductor', 'level')
+        'name', 'email', 'phone_number', 'team','id_card','track', 'team_leader', 'leader_phone_number', 'starred_conductor', 'level', )
     search_fields = ('name', 'email', 'phone_number', 'team__name')
-    list_filter = ('team', 'team_leader', 'starred_conductor', 'referral', 'level','approval_status','id_card')
+    list_filter = ('team', 'team_leader', 'starred_conductor', 'referral', 'level','approval_status', 'id_card')
 
-    actions = ['check_stars','id_card']
+    actions = ['check_stars', 'add_id_card']
 
 
     def check_stars(self, request, queryset):
         threading.Thread(target=bulk_started_status_check, args=(queryset,)).start()
         # bulk_started_status_check(queryset)
 
-    def id_card(self, request, queryset):
+    def add_id_card(self, request, queryset):
         queryset.update(id_card=True)
 
+    def track(self,obj):
+        return  obj.team.track
 
 class TeamMemberInline(admin.StackedInline):
     model = TeamMember
