@@ -184,9 +184,9 @@ class TeamMemberAdmin(ImportExportModelAdmin):
         'starred_conductor', 'level',)
     search_fields = ('name', 'email', 'phone_number', 'team__name')
     list_filter = (
-    'team', 'team_leader', 'starred_conductor', 'referral', 'level', 'approval_status', 'id_card', 'team__rsvp')
+        'team', 'team_leader', 'starred_conductor', 'referral', 'level', 'approval_status', 'id_card', 'team__rsvp')
 
-    actions = ['check_stars', 'add_id_card']
+    actions = ['check_stars', 'add_id_card', 'generate_user']
 
     def check_stars(self, request, queryset):
         threading.Thread(target=bulk_started_status_check, args=(queryset,)).start()
@@ -197,6 +197,21 @@ class TeamMemberAdmin(ImportExportModelAdmin):
 
     def track(self, obj):
         return obj.team.track
+
+    def generate_user(self, request, queryset):
+        for member in queryset:
+            if not User.objects.filter(email=member.email).exists():
+                user = User.objects.create(
+                    full_name=member.name,
+                    email=member.email,
+                    mobile_number=member.phone_number,
+                    is_staff=True,
+                    is_active=True
+                )
+                grp = Group.objects.get_or_create(name="Team Member")
+                grp[0].user_set.add(user)
+                member.user = user
+                member.save()
 
 
 class TeamMemberInline(admin.StackedInline):
@@ -391,7 +406,7 @@ class MyTeamAdmin(admin.ModelAdmin):
         return "Approved" if obj.approved else "Declined"
 
     def get_queryset(self, request):
-        return super().get_queryset(request).filter(leader=request.user)
+        return super().get_queryset(request).filter(Q(leader=request.user) | Q(members__user=request.user)).distinct()
 
     # def has_change_permission(self, request, obj=None):
     #   return False
@@ -409,7 +424,7 @@ class MyTeamMemberAdmin(admin.ModelAdmin):
     exclude = common_exclude + ['approval_status', 'level']
 
     def get_queryset(self, request):
-        return super().get_queryset(request).filter(team__leader=request.user)
+        return super().get_queryset(request).filter(Q(team__leader=request.user) | Q(team__members__user=request.user)).distinct()
 
     def has_change_permission(self, request, obj=None):
         return False

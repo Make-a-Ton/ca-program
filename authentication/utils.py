@@ -1,12 +1,12 @@
+import logging
 import random
 import smtplib
 import ssl
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from time import sleep
-import certifi
-import logging
 
+import certifi
 from django.contrib.auth.models import Group
 from django.template.loader import render_to_string
 from django.utils.crypto import get_random_string
@@ -57,6 +57,7 @@ def send_bulk_email(queryset):
     i = 0
     for user in queryset:
         # check user exists in a group
+        # if us
         if not Group.objects.get(name='Team Leader').user_set.filter(id=user.id).exists():
             logger.info(f'{user.email} is not a team leader so skipping')
             continue
@@ -76,6 +77,6 @@ def send_bulk_email(queryset):
 
             i += 1
         except Exception as e:
-            user.password=''
+            user.password = 'makeaton@123'
             user.save()
             logger.error(f"Error in sending email to {user.email}: {e}")

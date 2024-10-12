@@ -109,6 +109,13 @@ def detect_profile_photo_change(sender, instance, **kwargs):
             thread_locals.generate_poster = True
 
 
+class SocialMediaPosts(Model):
+    title = models.CharField(max_length=255, help_text="Just a title about for the post")
+    screenshot = models.ImageField(upload_to='social_media_posts')
+    link = models.URLField()
+    user = models.ForeignKey('authentication.User', on_delete=models.CASCADE)
+    verified = models.BooleanField(default=False, help_text="Organizer will verify the post and mark it as verified")
+
 @receiver(post_save, sender=ImParticipating)
 def generate_poster_post_save(sender, instance, **kwargs):
     generate_poster = getattr(thread_locals, 'generate_poster', False)

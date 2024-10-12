@@ -1,5 +1,6 @@
-from django.db import models
 from django.core.exceptions import ValidationError
+from django.db import models
+
 from authentication.models import User
 from base.models import Model
 from ca.models import CampusAmbassador
@@ -87,6 +88,7 @@ class TeamMember(Model):
     level = models.CharField(max_length=255, blank=True, null=True, choices=(
         ('beginner', 'beginner'), ('intermediate', 'intermediate'), ('advanced', 'advanced')))  # Level of expertise
     id_card = models.BooleanField(default=False)
+    user = models.OneToOneField(User, on_delete=models.RESTRICT, related_name='team_member', blank=True, null=True)
 
     def __str__(self):
         return self.name

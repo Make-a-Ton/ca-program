@@ -1,15 +1,10 @@
-import re
 import threading
+
 from django.contrib import admin
 from django.contrib.admin import SimpleListFilter
 
-from authentication.utils import send_email, send_bulk_email
-from django.template.loader import render_to_string
-from django.utils.crypto import get_random_string
-from django.utils.html import strip_tags
-
 from authentication.models import User
-from config import settings
+from authentication.utils import send_bulk_email
 
 
 def is_sha256_hash(text):
