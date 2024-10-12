@@ -36,7 +36,7 @@ class SocialMediaPostsAdmin(admin.ModelAdmin):
     list_filter = ('verified',)
     exclude = common_exclude + ['user']
     readonly_fields = ['verified']
-    actions = ['verify']
+    # actions = ['verify']
 
     def screenshot_preview(self, obj):
         return mark_safe(f'<img src="{obj.screenshot.url}" height="100" />')
@@ -52,17 +52,17 @@ class SocialMediaPostsAdmin(admin.ModelAdmin):
             obj.user = request.user
         super().save_model(request, obj, form, change)
 
-    def verify(self, request, queryset):
-        queryset.update(verified=True)
+    # def verify(self, request, queryset):
+    #     queryset.update(verified=True)
 
-    # def get_action(self, action):
-    #     return super().get_action(action)
-    # show verify action only to superuser
-    def get_actions(self, request):
-        actions = super().get_actions(request)
-        if not request.user.is_superuser:
-            actions.pop('verify')
-        return actions
+    # # def get_action(self, action):
+    # #     return super().get_action(action)
+    # # show verify action only to superuser
+    # def get_actions(self, request):
+    #     actions = super().get_actions(request)
+    #     if not request.user.is_superuser:
+    #         actions.pop('verify')
+    #     return actions
 
 
 admin.site.register(SocialMediaPosts, SocialMediaPostsAdmin)
