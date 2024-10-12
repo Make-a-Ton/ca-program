@@ -58,9 +58,9 @@ def send_bulk_email(queryset):
     for user in queryset:
         # check user exists in a group
         # if us
-        if not Group.objects.get(name='Team Leader').user_set.filter(id=user.id).exists():
-            logger.info(f'{user.email} is not a team leader so skipping')
-            continue
+        # if not Group.objects.get(name='Team Leader').user_set.filter(id=user.id).exists():
+        #     logger.info(f'{user.email} is not a team leader so skipping')
+        #     continue
         try:
             random_password = get_random_string(length=5)
             user.set_password(random_password)
