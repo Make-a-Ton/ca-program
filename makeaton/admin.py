@@ -180,12 +180,13 @@ class TeamResource(resources.ModelResource):
 class TeamMemberAdmin(ImportExportModelAdmin):
     resource_class = TeamMemberResource
     list_display = (
-        'name', 'email', 'phone_number', 'team','id_card','track', 'team_leader', 'leader_phone_number', 'starred_conductor', 'level', )
+        'name', 'email', 'phone_number', 'team', 'id_card', 'track', 'team_leader', 'leader_phone_number',
+        'starred_conductor', 'level',)
     search_fields = ('name', 'email', 'phone_number', 'team__name')
-    list_filter = ('team', 'team_leader', 'starred_conductor', 'referral', 'level','approval_status', 'id_card')
+    list_filter = (
+    'team', 'team_leader', 'starred_conductor', 'referral', 'level', 'approval_status', 'id_card', 'team__rsvp')
 
     actions = ['check_stars', 'add_id_card']
-
 
     def check_stars(self, request, queryset):
         threading.Thread(target=bulk_started_status_check, args=(queryset,)).start()
@@ -194,8 +195,9 @@ class TeamMemberAdmin(ImportExportModelAdmin):
     def add_id_card(self, request, queryset):
         queryset.update(id_card=True)
 
-    def track(self,obj):
-        return  obj.team.track
+    def track(self, obj):
+        return obj.team.track
+
 
 class TeamMemberInline(admin.StackedInline):
     model = TeamMember
@@ -237,11 +239,11 @@ class TeamAdmin(ImportExportModelAdmin):
     list_display = ('name', 'conductor_track', 'leader_phone', 'member_count', 'approved')
     search_fields = ('name', 'leader_phone')
     inlines = [TeamMemberInline]
-    list_filter = (HasLeaderFilter, 'conductor_track', 'approved','rsvp')  # Adding the custom filter here
+    list_filter = (HasLeaderFilter, 'conductor_track', 'approved', 'rsvp')  # Adding the custom filter here
 
-    actions = ['approve_teams', 'disapprove_teams', 'rsvp_mail','send_rsvp_email']
+    actions = ['approve_teams', 'disapprove_teams', 'rsvp_mail', 'send_rsvp_email']
 
-    def member_count(self, obj):    
+    def member_count(self, obj):
         return obj.members.count()
 
     member_count.short_description = 'Member Count'
