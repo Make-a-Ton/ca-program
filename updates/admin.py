@@ -54,9 +54,15 @@ class SocialMediaPostsAdmin(admin.ModelAdmin):
 
     def verify(self, request, queryset):
         queryset.update(verified=True)
+
     # def get_action(self, action):
     #     return super().get_action(action)
-    # s
+    # show verify action only to superuser
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        if not request.user.is_superuser:
+            actions.pop('verify')
+        return actions
 
 
 admin.site.register(SocialMediaPosts, SocialMediaPostsAdmin)
