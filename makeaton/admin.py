@@ -184,7 +184,7 @@ class TeamMemberAdmin(ImportExportModelAdmin):
         'starred_conductor', 'level',)
     search_fields = ('name', 'email', 'phone_number', 'team__name')
     list_filter = (
-        'team', 'team_leader', 'starred_conductor', 'referral', 'level', 'approval_status', 'id_card', 'team__rsvp')
+        'team', 'team_leader', 'starred_conductor', 'referral', 'level', 'team__approved', 'id_card',)
 
     actions = ['check_stars', 'add_id_card', 'generate_user']
 
